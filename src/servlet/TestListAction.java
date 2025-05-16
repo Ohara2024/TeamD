@@ -34,7 +34,7 @@ public class TestListAction extends HttpServlet {
             request.setAttribute("errorMessage", "学校情報が取得できませんでした。再度ログインしてください。");
             // login.jspの正確なパスが不明なため、ルート相対パスとしています。
             // プロジェクト構成に合わせて修正してください。例: /TeamD/login.jsp
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/login.jsp");
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/login/login.jsp");
             dispatcher.forward(request, response);
             return;
         }

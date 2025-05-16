@@ -7,6 +7,10 @@ import java.sql.SQLException;
 
 import bean.Teacher;
 
+/**
+ * ファイル名TeacherDao.java
+ */
+
 public class TeacherDao extends Dao {
 	/**
 	 * getメソッド 教員IDを指定して教員インスタンスを1件取得する

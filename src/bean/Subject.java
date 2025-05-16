@@ -2,6 +2,10 @@ package bean;
 
 import java.io.Serializable;
 
+/**
+ * ファイル名 Subject.java
+ */
+
 public class Subject implements Serializable {
 	/**
 	 * 科目コード:String

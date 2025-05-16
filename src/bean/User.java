@@ -1,5 +1,9 @@
 package bean;
 
+/**
+ * ファイル名 User.java
+ */
+
 public class User {
 	/**
 	 * 認証済みフラグ:boolean true:認証済み

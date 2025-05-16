@@ -3,6 +3,10 @@ package bean;
 import java.io.Serializable;
 import java.time.LocalDate;
 
+/**
+ * ファイル名 Student.java
+ */
+
 public class Student implements Serializable {
 	/**
 	 * 学生番号:String

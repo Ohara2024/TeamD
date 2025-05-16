@@ -10,6 +10,10 @@ import java.util.List;
 import bean.School;
 import bean.Subject;
 
+/**
+ * ファイル名 SubjectDao.java
+ */
+
 public class SubjectDao extends Dao {
 	/**
 	 * getメソッド 科目コードと学校を指定して科目インスタンスを1件取得する

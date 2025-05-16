@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * ファイル名 TestListSubject.java
+ */
+
 public class TestListSubject implements Serializable {
 	/**
 	 * 入学年度:int

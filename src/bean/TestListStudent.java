@@ -2,6 +2,10 @@ package bean;
 
 import java.io.Serializable;
 
+/**
+ * ファイル名 TestListStudent.java
+ */
+
 public class TestListStudent implements Serializable {
 	/**
 	 * 科目名:String

@@ -9,32 +9,26 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletRequest;
 
 @WebFilter("/*")
 public class EncodingFilter implements Filter {
-    private String encoding;
+    private String encoding = "UTF-8";
 
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        encoding = filterConfig.getInitParameter("encoding");
-        if (encoding == null) {
-            encoding = "UTF-8";
+    public void init(FilterConfig config) throws ServletException {
+        String configEncoding = config.getInitParameter("encoding");
+        if (configEncoding != null) {
+            encoding = configEncoding;
         }
     }
 
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain next)
             throws IOException, ServletException {
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        httpRequest.setCharacterEncoding(encoding);
-        response.setContentType("text/html; charset=" + encoding);
+        request.setCharacterEncoding(encoding);
         response.setCharacterEncoding(encoding);
-        chain.doFilter(request, response);
+        next.doFilter(request, response);
     }
 
-    @Override
     public void destroy() {
-        // do nothing
+        // 特に行う処理はありません
     }
 }

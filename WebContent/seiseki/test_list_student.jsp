@@ -4,13 +4,9 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>科目別成績参照</title>
-    <%-- <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css"> --%>
-    <%-- ↑ style.css は今回作成対象外です。もし test_list.jsp のスタイルを適用する場合は、
-         そのスタイルを外部ファイル化するか、このJSPにも同様に<style>タグで記述する必要があります。
-         ここではコメントアウトしておきます。 --%>
+    <title>成績参照結果 - 得点管理システム</title>
+    <%-- 共通スタイルを使用する想定 --%>
     <style>
-        /* test_list.jsp から主要なスタイルを一部抜粋・調整して適用します */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f7fa; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .main-wrapper { display: flex; width: 90%; max-width: 1200px; background-color: #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px; margin: 20px 0; }
         .menu-bar { width: 180px; min-width: 180px; padding: 20px; background-color: #e9eff5; border-right: 1px solid #dee2e6; border-radius: 8px 0 0 8px; }
@@ -29,7 +25,7 @@
         .search-section h2 { color: #34495e; font-size: 1.2em; margin-top: 0; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px dashed #e0e0e0; }
         .form-group { margin-bottom: 15px; display: flex; align-items: center; }
         label { display: inline-block; width: 100px; min-width: 100px; text-align: left; margin-right: 15px; color: #555; font-weight: bold; }
-        select, input[type="text"] { flex-grow: 1; padding: 10px 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 1em; max-width: 250px; } /* 幅調整 */
+        select, input[type="text"] { flex-grow: 1; padding: 10px 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 1em; max-width: 250px; }
         button[type="submit"] { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; transition: background-color 0.3s ease; margin-left: 115px; }
         button[type="submit"]:hover { background-color: #0056b3; }
         .table { width: 100%; margin-bottom: 20px; border-collapse: collapse; background-color: white; }
@@ -43,44 +39,43 @@
         .no-data-message { background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; }
         .footer { width: 100%; text-align: center; margin-top: 40px; padding: 20px 0; border-top: 1px solid #e0e0e0; color: #777; font-size: 0.8em; background-color: #f4f7fa; }
         h3.results-title { color: #34495e; font-size: 1.3em; margin-top: 30px; margin-bottom: 15px; padding-bottom:10px; border-bottom:1px solid #e0e0e0;}
+        .student-info-section { margin-bottom: 20px; padding:15px; border: 1px solid #e0e0e0; border-radius: 6px; background-color: #f9f9f9;}
+        .student-info-section p { margin: 5px 0; font-size: 1.0em;}
+        .student-info-section strong { display: inline-block; width: 100px; }
+        .back-link { display: inline-block; margin-top: 20px; padding: 8px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px; transition: background-color 0.3s ease; }
+        .back-link:hover { background-color: #5a6268; }
     </style>
 </head>
 <body>
-    <%-- header.jsp は今回作成対象外です。
-    <jsp:include page="header.jsp"/>
-    --%>
     <div class="main-wrapper">
         <div class="menu-bar">
             <h3>メニュー</h3>
             <ul>
                 <li><a href="#">学生管理</a></li>
                 <li><a href="#">成績登録</a></li>
-                <li><a href="#" class="active">成績参照</a></li>
+                <li><a href="${pageContext.request.contextPath}/main/TestList.action" class="active">成績参照</a></li>
                 <li><a href="#">成績照会</a></li>
                 <li><a href="#">科目管理</a></li>
             </ul>
         </div>
         <div class="content-area">
             <div class="header">
-                <h1>科目別成績</h1>
+                <h1>成績参照結果</h1>
                  <span class="user-info">
-                    <c:if test="${not empty sessionScope.teacher}">
-                        ${sessionScope.teacher.name}さん
-                    </c:if>
-                    <c:if test="${empty sessionScope.teacher}">
-                        ゲストさん
-                    </c:if>
+                    <c:if test="${not empty sessionScope.teacher}">${sessionScope.teacher.name}さん</c:if>
+                    <c:if test="${empty sessionScope.teacher}">ゲストさん</c:if>
                     <a href="#">ログアウト</a>
                 </span>
             </div>
 
-            <div class="search-section">
-                 <h2>検索条件</h2>
-                <form action="${pageContext.request.contextPath}/main/TestList.action" method="post">
+            <%-- 検索条件入力フォーム (test_list.jsp と同様のものをここに表示し、再検索可能にする) --%>
+            <form action="${pageContext.request.contextPath}/main/TestList.action" method="post">
+                <div class="search-section">
+                    <h2>検索条件</h2>
                     <div class="form-group">
                         <label for="entYear">入学年度:</label>
                         <select id="entYear" name="entYear">
-                            <option value="">すべて</option> <%-- 「選択してください」から「すべて」へ文言変更も検討 --%>
+                            <option value="">すべて</option>
                             <c:forEach var="year" items="${requestScope.entYearSet}">
                                 <option value="${year}" ${year == requestScope.fEntYear ? 'selected' : ''}>${year}</option>
                             </c:forEach>
@@ -104,62 +99,112 @@
                             </c:forEach>
                         </select>
                     </div>
+                    <div style="text-align: center; margin-bottom: 15px;"> または </div>
+                     <div class="form-group">
+                        <label for="studentNo">学生番号:</label>
+                        <input type="text" id="studentNo" name="studentNo" placeholder="学生番号で検索" value="${requestScope.fStudentNo}">
+                    </div>
                     <button type="submit">検索</button>
-                </form>
-            </div>
+                </div>
+            </form>
+
 
             <c:if test="${not empty requestScope.errorMessage}">
                 <p class="error-message"><c:out value="${requestScope.errorMessage}"/></p>
             </c:if>
-            <c:if test="${not empty requestScope.infoMessage and empty requestScope.errorMessage}">
-                <p class="info-message"><c:out value="${requestScope.infoMessage}"/></p>
+
+            <%-- 科目別成績一覧の表示 --%>
+            <c:if test="${requestScope.searchMode == 'subject'}">
+                <c:if test="${not empty requestScope.scoreList}">
+                    <h3 class="results-title">
+                        科目別 成績一覧
+                        <c:if test="${not empty requestScope.searchSubjectName}">
+                            ： ${requestScope.searchSubjectName}
+                        </c:if>
+                    </h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>入学年度</th>
+                                <th>クラス</th>
+                                <th>学生番号</th>
+                                <th>氏名</th>
+                                <th>1回</th>
+                                <th>2回</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="item" items="${requestScope.scoreList}">
+                                <tr>
+                                    <td><c:out value="${item.entYear}"/></td>
+                                    <td><c:out value="${item.classNum}"/></td>
+                                    <td><c:out value="${item.studentNo}"/></td>
+                                    <td><c:out value="${item.studentName}"/></td>
+                                    <td><c:out value="${item.getPoint(1)}"/></td>
+                                    <td><c:out value="${item.getPoint(2)}"/></td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </c:if>
+                <c:if test="${empty requestScope.scoreList and empty requestScope.errorMessage and not empty requestScope.fEntYear and not empty requestScope.fClassNum and not empty requestScope.fSubjectCd}">
+                    <p class="no-data-message">指定された科目・条件での成績情報は見つかりませんでした。</p>
+                </c:if>
             </c:if>
 
-            <c:if test="${not empty requestScope.scoreList}">
-                <h3 class="results-title">
-                    成績一覧
-                    <c:if test="${not empty requestScope.searchSubjectName}">
-                        ： ${requestScope.searchSubjectName}
+            <%-- 学生個別成績の表示 --%>
+            <c:if test="${requestScope.searchMode == 'student'}">
+                <c:if test="${not empty requestScope.student}">
+                    <h3 class="results-title">学生別 成績詳細</h3>
+                    <div class="student-info-section">
+                        <p><strong>学生番号:</strong> <c:out value="${requestScope.student.no}"/></p>
+                        <p><strong>氏〠   名:</strong> <c:out value="${requestScope.student.name}"/></p>
+                        <p><strong>入学年度:</strong> <c:out value="${requestScope.student.entYear}"/></p>
+                        <p><strong>クラス:</strong> <c:out value="${requestScope.student.classNum}"/></p>
+                    </div>
+
+                    <c:if test="${not empty requestScope.studentScores}">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>科目コード</th>
+                                    <th>科目名</th>
+                                    <th>回数</th>
+                                    <th>得点</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="score" items="${requestScope.studentScores}">
+                                    <tr>
+                                        <td><c:out value="${score.subjectCd}"/></td>
+                                        <td><c:out value="${score.subjectName}"/></td>
+                                        <td><c:out value="${score.num}"/></td>
+                                        <td><c:out value="${score.point}"/></td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
                     </c:if>
-                </h3>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>入学年度</th>
-                            <th>クラス</th>
-                            <th>学生番号</th>
-                            <th>氏名</th>
-                            <th>1回</th>
-                            <th>2回</th>
-                            <%-- 必要であれば、表示するテスト回数を動的に変更するロジックも検討できます --%>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:forEach var="item" items="${requestScope.scoreList}">
-                            <tr>
-                                <td><c:out value="${item.entYear}"/></td>
-                                <td><c:out value="${item.classNum}"/></td>
-                                <td><c:out value="${item.studentNo}"/></td>
-                                <td><c:out value="${item.studentName}"/></td>
-                                <td><c:out value="${item.getPoint(1)}"/></td>
-                                <td><c:out value="${item.getPoint(2)}"/></td>
-                            </tr>
-                        </c:forEach>
-                    </tbody>
-                </table>
+                    <c:if test="${empty requestScope.studentScores and empty requestScope.errorMessage}">
+                        <p class="no-data-message">この学生の成績情報は見つかりませんでした。</p>
+                    </c:if>
+                </c:if>
+                 <c:if test="${empty requestScope.student and empty requestScope.errorMessage and not empty requestScope.fStudentNo}">
+                    <%-- このメッセージはサーブレット側でerrorMessageとして設定されるため、通常は不要 --%>
+                    <%-- <p class="no-data-message">指定された学生番号の学生が見つかりませんでした。</p> --%>
+                </c:if>
             </c:if>
-            <%-- scoreListが空で、かつ検索が実行されたことを示すフラグ(例: fEntYear等がnullでない)がある場合にメッセージ表示 --%>
-            <c:if test="${empty requestScope.scoreList and not empty requestScope.fEntYear and not empty requestScope.fClassNum and not empty requestScope.fSubjectCd and empty requestScope.errorMessage}">
-                <p class="no-data-message">該当する成績情報は見つかりませんでした。</p>
+            
+            <%-- 検索が実行されず、エラーもない場合の初期メッセージ (主にdoGetからの遷移時を想定するが、POSTで条件不備でここにきた場合も考慮) --%>
+            <c:if test="${empty requestScope.searchMode and empty requestScope.errorMessage and not empty requestScope.infoMessage}">
+                 <p class="info-message"><c:out value="${requestScope.infoMessage}"/></p>
             </c:if>
+
+            <%-- 検索画面に戻るリンクは不要（このページ自体が検索フォームと結果を兼ねるため） --%>
+            <%-- <a href="${pageContext.request.contextPath}/main/TestList.action" class="back-link">検索画面に戻る</a> --%>
         </div>
     </div>
-    <%-- footer.jsp は今回作成対象外です。
-    <jsp:include page="footer.jsp"/>
-    --%>
     <div class="footer">
         © <%= java.time.Year.now().getValue() %> TIC<br>
         大原学園
     </div>
-</body>
-</html>

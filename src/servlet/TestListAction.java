@@ -18,44 +18,66 @@ import javax.servlet.http.HttpSession;
 import bean.School;
 import bean.Student;
 import bean.Subject;
+import bean.TestListStudent;
 import bean.TestListSubject;
 import dao.ClassNumDao;
 import dao.SchoolDao;
 import dao.StudentDao;
 import dao.SubjectDao;
+import dao.TestListStudentDao;
 import dao.TestListSubjectDao;
 
 @WebServlet("/main/TestList.action")
 public class TestListAction extends HttpServlet {
 
-    // ★★★ 重要: ログインなしで参照する場合、どの学校の情報を表示するかのデフォルト学校コード ★★★
-    // ★★★ この値を、データベースに存在する実際の有効な学校コードに置き換えてください。 ★★★
-    private static final String DEFAULT_SCHOOL_CD = "oom"; // 例: "tky" や "oom" など、DBに存在する値
+    private static final String DEFAULT_SCHOOL_CD = "oom"; // 有効な学校コードに置き換えてください
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-
         HttpSession session = request.getSession();
         School loginSchool = (School) session.getAttribute("loginSchool");
         String errorMessage = null;
+        String searchMode = null;
+
+        SchoolDao schoolDao = new SchoolDao();
+        StudentDao studentDao = new StudentDao();
+        ClassNumDao classNumDao = new ClassNumDao();
+        SubjectDao subjectDao = new SubjectDao();
+        TestListSubjectDao testListSubjectDao = new TestListSubjectDao();
+        TestListStudentDao testListStudentDao = new TestListStudentDao();
 
         if (loginSchool == null) {
-            SchoolDao schoolDao = new SchoolDao();
             try {
                 loginSchool = schoolDao.get(DEFAULT_SCHOOL_CD);
                 if (loginSchool == null) {
-                    errorMessage = "デフォルトの学校情報がシステムに設定されていません。管理者に確認してください。";
+                    errorMessage = "デフォルトの学校情報がシステムに設定されていません。";
                     request.setAttribute("errorMessage", errorMessage);
-                    RequestDispatcher dispatcher = request.getRequestDispatcher("/seiseki/test_list_student.jsp"); // エラー時は成績一覧へ（または専用エラーページへ）
-                    dispatcher.forward(request, response);
+                    // prepareDropdownData を try-catch で囲む
+                    try {
+                        prepareDropdownData(request, loginSchool, studentDao, classNumDao, subjectDao);
+                    } catch (Exception innerEx) {
+                        innerEx.printStackTrace();
+                        if (errorMessage == null) errorMessage = "プルダウンデータの準備中にエラーが発生しました。";
+                        request.setAttribute("errorMessage", errorMessage); // エラーメッセージを更新または設定
+                    }
+                    request.getRequestDispatcher("/seiseki/test_list.jsp").forward(request, response);
                     return;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 errorMessage = "学校情報の取得中にエラーが発生しました。";
                 request.setAttribute("errorMessage", errorMessage);
-                RequestDispatcher dispatcher = request.getRequestDispatcher("/seiseki/test_list_student.jsp"); // エラー時は成績一覧へ
-                dispatcher.forward(request, response);
+                // prepareDropdownData を try-catch で囲む
+                try {
+                    // loginSchool がこの時点で null の可能性があるため、prepareDropdownData がそれを処理できるか確認
+                    prepareDropdownData(request, loginSchool, studentDao, classNumDao, subjectDao);
+                } catch (Exception innerEx) {
+                    innerEx.printStackTrace();
+                    // エラーメッセージは既に設定されているか、ここで上書き
+                    errorMessage = "学校情報取得エラー後、プルダウンデータの準備中にもエラーが発生しました。";
+                    request.setAttribute("errorMessage", errorMessage);
+                }
+                request.getRequestDispatcher("/seiseki/test_list.jsp").forward(request, response);
                 return;
             }
         }
@@ -65,81 +87,98 @@ public class TestListAction extends HttpServlet {
         String subjectCd = request.getParameter("subjectCd");
         String studentNo = request.getParameter("studentNo");
 
-        List<TestListSubject> scoreList = null;
-        String searchSubjectName = null;
-
-        TestListSubjectDao testListSubjectDao = new TestListSubjectDao();
-        SubjectDao subjectDao = new SubjectDao();
-        ClassNumDao classNumDao = new ClassNumDao();
-        StudentDao studentDao = new StudentDao();
-
         try {
-            // 入学年度リストの準備 (DBから取得)
-            List<Student> studentListForYears = studentDao.filter(loginSchool, false);
-            Set<Integer> distinctYears = new HashSet<>();
-            if (studentListForYears != null) {
-                for (Student student : studentListForYears) {
-                    distinctYears.add(student.getEntYear());
+            prepareDropdownData(request, loginSchool, studentDao, classNumDao, subjectDao);
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (errorMessage == null) errorMessage = "プルダウンデータの取得中にエラーが発生しました。";
+            // このエラーが致命的なら、ここでフォワードしてreturnも検討
+        }
+
+        request.setAttribute("fEntYear", entYearStr);
+        request.setAttribute("fClassNum", classNum);
+        request.setAttribute("fSubjectCd", subjectCd);
+        request.setAttribute("fStudentNo", studentNo);
+
+        if (studentNo != null && !studentNo.isEmpty()) {
+            searchMode = "student";
+            try {
+                Student student = studentDao.get(studentNo);
+                if (student != null && student.getSchool().getCd().equals(loginSchool.getCd())) {
+                    List<TestListStudent> studentScores = testListStudentDao.filter(student);
+                    request.setAttribute("student", student);
+                    request.setAttribute("studentScores", studentScores);
+                } else {
+                    if (errorMessage == null) errorMessage = "指定された学生番号の学生が見つからないか、学校が異なります。";
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (errorMessage == null) errorMessage = "学生成績の検索中にエラーが発生しました：" + e.getMessage();
             }
-            List<Integer> entYearSet = new ArrayList<>(distinctYears);
-            Collections.sort(entYearSet, Collections.reverseOrder());
-            request.setAttribute("entYearSet", entYearSet);
-
-            // クラスリストの準備
-            List<String> classNumSet = classNumDao.filter(loginSchool);
-            request.setAttribute("classNumSet", classNumSet);
-
-            // 科目リストの準備
-            List<Subject> subjects = subjectDao.filter(loginSchool);
-            request.setAttribute("subjects", subjects);
-
-            // 検索条件の保持
-            request.setAttribute("fEntYear", entYearStr);
-            request.setAttribute("fClassNum", classNum);
-            request.setAttribute("fSubjectCd", subjectCd);
-
-            // 科目情報での検索
-            if (entYearStr != null && !entYearStr.isEmpty() &&
-                classNum != null && !classNum.isEmpty() &&
-                subjectCd != null && !subjectCd.isEmpty()) {
-
+        }
+        else if (entYearStr != null && !entYearStr.isEmpty() &&
+                 classNum != null && !classNum.isEmpty() &&
+                 subjectCd != null && !subjectCd.isEmpty()) {
+            searchMode = "subject";
+            try {
                 int entYear = Integer.parseInt(entYearStr);
                 Subject subject = subjectDao.get(subjectCd, loginSchool);
                 if (subject != null) {
-                    searchSubjectName = subject.getName();
-                    scoreList = testListSubjectDao.filter(entYear, classNum, subject, loginSchool);
+                    List<TestListSubject> scoreList = testListSubjectDao.filter(entYear, classNum, subject, loginSchool);
+                    request.setAttribute("scoreList", scoreList);
+                    request.setAttribute("searchSubjectName", subject.getName());
                     if (scoreList == null || scoreList.isEmpty()) {
-                        errorMessage = "指定された条件に合致する成績情報は見つかりませんでした。";
+                        if (errorMessage == null) errorMessage = "指定された条件に合致する成績情報は見つかりませんでした。";
                     }
                 } else {
-                    errorMessage = "指定された科目 ("+ subjectCd +") が見つかりません。"; //エラーメッセージに科目コード追加
+                    if (errorMessage == null) errorMessage = "指定された科目が見つかりません。";
                 }
-            } else if (studentNo != null && !studentNo.isEmpty()) {
-                errorMessage = "学生番号での検索は現在未実装です。科目情報で検索してください。";
-            } else if (request.getMethod().equalsIgnoreCase("POST") && // POSTリクエストの場合のみ「全て選択」をチェック
-                       ((entYearStr != null && !entYearStr.isEmpty()) ||
-                       (classNum != null && !classNum.isEmpty()) ||
-                       (subjectCd != null && !subjectCd.isEmpty()))) {
-                errorMessage = "科目情報で検索する場合は、入学年度、クラス、科目をすべて選択してください。";
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                if (errorMessage == null) errorMessage = "入学年度が不正な形式です。";
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (errorMessage == null) errorMessage = "科目別成績の検索中にエラーが発生しました：" + e.getMessage();
             }
-            // GETリクエスト時や、POSTでも全ての検索条件が空の場合は、エラーメッセージは設定しない（infoMessageに任せる）
-
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            errorMessage = "入学年度が不正な形式です。";
-        } catch (Exception e) {
-            e.printStackTrace();
-            errorMessage = "データの取得中にエラーが発生しました：" + e.getMessage();
+        }
+        else {
+            if (request.getMethod().equalsIgnoreCase("POST")) {
+                 if (errorMessage == null) errorMessage = "検索条件を正しく入力または選択してください。";
+            }
         }
 
-        request.setAttribute("scoreList", scoreList);
-        request.setAttribute("searchSubjectName", searchSubjectName);
+        request.setAttribute("searchMode", searchMode);
         request.setAttribute("errorMessage", errorMessage);
+        request.getRequestDispatcher("/seiseki/test_list_student.jsp").forward(request, response);
+    }
 
-        // POSTリクエストの場合は結果表示ページへフォワード
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/seiseki/test_list_student.jsp");
-        dispatcher.forward(request, response);
+    private void prepareDropdownData(HttpServletRequest request, School loginSchool,
+                                     StudentDao studentDao, ClassNumDao classNumDao, SubjectDao subjectDao) throws Exception { // このメソッドは Exception をスローする
+        if (loginSchool == null || studentDao == null || classNumDao == null || subjectDao == null) {
+             request.setAttribute("entYearSet", new ArrayList<Integer>());
+             request.setAttribute("classNumSet", new ArrayList<String>());
+             request.setAttribute("subjects", new ArrayList<Subject>());
+            System.err.println("prepareDropdownData: loginSchool or one of the DAOs is null. loginSchool=" + loginSchool);
+            // loginSchool が null の場合に Exception をスローして、呼び出し元でエラー処理させることもできる
+            // throw new ServletException("prepareDropdownData: Required objects are null.");
+            return;
+        }
+        List<Student> studentListForYears = studentDao.filter(loginSchool, false);
+        Set<Integer> distinctYears = new HashSet<>();
+        if (studentListForYears != null) {
+            for (Student s : studentListForYears) {
+                distinctYears.add(s.getEntYear());
+            }
+        }
+        List<Integer> entYearSet = new ArrayList<>(distinctYears);
+        Collections.sort(entYearSet, Collections.reverseOrder());
+        request.setAttribute("entYearSet", entYearSet);
+
+        List<String> classNumSet = classNumDao.filter(loginSchool);
+        request.setAttribute("classNumSet", classNumSet);
+
+        List<Subject> subjects = subjectDao.filter(loginSchool);
+        request.setAttribute("subjects", subjects);
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -148,66 +187,37 @@ public class TestListAction extends HttpServlet {
         String errorMessage = null;
         String infoMessage = null;
 
+        SchoolDao schoolDao = new SchoolDao();
+        StudentDao studentDao = new StudentDao();
+        ClassNumDao classNumDao = new ClassNumDao();
+        SubjectDao subjectDao = new SubjectDao();
+
         if (loginSchool == null) {
-            SchoolDao schoolDao = new SchoolDao();
             try {
                 loginSchool = schoolDao.get(DEFAULT_SCHOOL_CD);
                 if (loginSchool == null) {
-                    errorMessage = "デフォルトの学校情報（コード: " + DEFAULT_SCHOOL_CD + "）がシステムに設定されていません。管理者に確認してください。";
-                    request.setAttribute("errorMessage", errorMessage);
-                    // doGetで初期表示するJSPにフォワード (修正点)
-                    RequestDispatcher dispatcher = request.getRequestDispatcher("/seiseki/test_list.jsp");
-                    dispatcher.forward(request, response);
-                    return;
+                    errorMessage = "デフォルトの学校情報（コード: " + DEFAULT_SCHOOL_CD + "）がシステムに設定されていません。";
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 errorMessage = "学校情報の取得中にエラーが発生しました。";
-                request.setAttribute("errorMessage", errorMessage);
-                // doGetで初期表示するJSPにフォワード (修正点)
-                RequestDispatcher dispatcher = request.getRequestDispatcher("/seiseki/test_list.jsp");
-                dispatcher.forward(request, response);
-                return;
             }
         }
-
-        ClassNumDao classNumDao = new ClassNumDao();
-        SubjectDao subjectDao = new SubjectDao();
-        StudentDao studentDao = new StudentDao();
 
         try {
-            // 入学年度リストの準備 (DBから取得)
-            List<Student> studentListForYears = studentDao.filter(loginSchool, false);
-            Set<Integer> distinctYears = new HashSet<>();
-            if (studentListForYears != null) {
-                for (Student student : studentListForYears) {
-                    distinctYears.add(student.getEntYear());
-                }
-            }
-            List<Integer> entYearSet = new ArrayList<>(distinctYears);
-            Collections.sort(entYearSet, Collections.reverseOrder());
-            request.setAttribute("entYearSet", entYearSet);
-
-            // クラスリストの準備
-            List<String> classNumSet = classNumDao.filter(loginSchool);
-            request.setAttribute("classNumSet", classNumSet);
-
-            // 科目リストの準備
-            List<Subject> subjects = subjectDao.filter(loginSchool);
-            request.setAttribute("subjects", subjects);
-
+            prepareDropdownData(request, loginSchool, studentDao, classNumDao, subjectDao);
         } catch (Exception e) {
             e.printStackTrace();
-            errorMessage = "初期データの取得中にエラーが発生しました：" + e.getMessage();
+            if (errorMessage == null) errorMessage = "初期データの取得中にエラーが発生しました：" + e.getMessage();
         }
 
-        if (errorMessage == null) { // エラーがない場合のみ情報メッセージを設定
+        if (errorMessage == null) {
             infoMessage = "検索条件を選択または入力して検索ボタンをクリックしてください。";
         }
         request.setAttribute("errorMessage", errorMessage);
-        request.setAttribute("infoMessage", infoMessage); // infoMessageもセット
+        request.setAttribute("infoMessage", infoMessage);
+        request.setAttribute("searchMode", null);
 
-        // 初期表示は検索条件入力画面 (test_list.jsp) へフォワード (修正点)
         RequestDispatcher dispatcher = request.getRequestDispatcher("/seiseki/test_list.jsp");
         dispatcher.forward(request, response);
     }

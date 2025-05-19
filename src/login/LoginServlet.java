@@ -11,12 +11,14 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
+@WebServlet("/login")
 public class LoginServlet extends HttpServlet {
     private static final int MAX_ATTEMPTS = 5;                  // 初期入力可能回数
     private static final long LOCKOUT_DURATION = 3 * 60 * 1000; // ロックアウト時間 (3分)
@@ -54,12 +56,12 @@ public class LoginServlet extends HttpServlet {
         try {
             // JNDI を使用して DataSource をルックアップ
             Context initContext = new InitialContext();
-            Context envContext = (Context) initContext.lookup("java:/comp/envjdbc/TeamD");
+            Context envContext = (Context) initContext.lookup("java:/comp/env");
             DataSource ds = (DataSource) envContext.lookup("jdbc/TeamD");
             conn = ds.getConnection();
 
             // ユーザー名とパスワードに基づいてユーザーを検索する SQL クエリ
-            String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+            String sql = "SELECT * FROM TEACHER WHERE ID = ? AND PASSWORD = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, username);
             pstmt.setString(2, password);

@@ -37,7 +37,7 @@ public class SubjectListAction extends HttpServlet {
             out.println("<html lang=\"ja\">");
             out.println("<head>");
             out.println("<meta charset=\"UTF-8\">");
-            out.println("<title>科目一</title>");
+            out.println("<title>科目一覧</title>");
             out.println("<style>");
             out.println("body { font-family: Arial, sans-serif; margin: 0; }");
             out.println("header { background: linear-gradient(to right, #dfefff, #eef5ff); padding: 20px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; }");

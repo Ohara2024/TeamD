@@ -7,263 +7,104 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 import bean.School;
 import bean.Subject;
 
-public class SubjectDao extends Dao {
+public class SubjectDao {
+
+    private DataSource ds;
+
     public SubjectDao() throws NamingException {
-        super();
+        Context initCtx = new InitialContext();
+        Context envCtx = (Context) initCtx.lookup("java:comp/env");
+        ds = (DataSource) envCtx.lookup("jdbc/MySQLDB");
     }
 
-    /**
-     * getメソッド 科目コードと学校を指定して科目インスタンスを1件取得する
-     *
-     * @param cd:String
-     * 科目コード
-     * @param school:School
-     * 学校
-     * @return 科目クラスのインスタンス 存在しない場合はnull
-     * @throws Exception
-     */
-    public Subject get(String cd, School school) throws Exception {
-        Subject subject = new Subject();
-        Connection connection = null;
-        PreparedStatement statement = null;
-
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement("select * from subject where cd=? and school_cd=?");
-            statement.setString(1, cd);
-            statement.setString(2, school.getCd());
-            ResultSet rSet = statement.executeQuery();
-
-            if (rSet.next()) {
-                subject.setCd(rSet.getString("cd"));
-                subject.setName(rSet.getString("name"));
-                subject.setSchool(school);
-            } else {
-                subject = null;
-            }
-        } catch (Exception e) {
-            throw new SQLException("科目の取得に失敗しました", e);
-        } finally {
-            close(statement, connection);
-        }
-
-        return subject;
-    }
-
-    /**
-     * findByCdメソッド 科目コードを指定して科目インスタンスを1件取得する
-     *
-     * @param cd:String
-     * 科目コード
-     * @return 科目クラスのインスタンス 存在しない場合はnull
-     * @throws Exception
-     */
-    public Subject findByCd(String cd) throws Exception {
-        Subject subject = new Subject();
-        Connection connection = null;
-        PreparedStatement statement = null;
-
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement("select * from subject where cd=?");
-            statement.setString(1, cd);
-            ResultSet rSet = statement.executeQuery();
-
-            if (rSet.next()) {
-                School school = new School();
-                school.setCd(rSet.getString("school_cd"));
-                subject.setSchool(school);
-                subject.setCd(rSet.getString("cd"));
-                subject.setName(rSet.getString("name"));
-            } else {
-                subject = null;
-            }
-        } catch (Exception e) {
-            throw new SQLException("科目の検索に失敗しました", e);
-        } finally {
-            close(statement, connection);
-        }
-
-        return subject;
-    }
-
-    /**
-     * filterメソッド 学校を指定して科目の一覧を取得する
-     *
-     * @param school:School
-     * 学校 (ここでは使用しません)
-     * @return 科目のリスト:List<Subject> 存在しない場合は0件のリスト
-     * @throws Exception
-     */
-    public List<Subject> filter(School school) throws Exception {
-        List<Subject> list = new ArrayList<>();
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet rSet = null;
-
-        try {
-            connection = getConnection();
-            // WHERE句を削除してすべての科目をSELECT
-            statement = connection.prepareStatement("select * from subject order by cd");
-            rSet = statement.executeQuery();
-
-            while (rSet.next()) {
-                Subject subject = new Subject();
-                School s = new School();
-                s.setCd(rSet.getString("school_cd"));
-                subject.setSchool(s);
-                subject.setCd(rSet.getString("cd"));
-                subject.setName(rSet.getString("name"));
-                list.add(subject);
-            }
-        } catch (Exception e) {
-            throw new SQLException("科目一覧の取得に失敗しました", e);
-        } finally {
-            close(statement, connection);
-            if (rSet != null) {
-                try {
-                    rSet.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return list;
-    }
-
-    /**
-     * findAllメソッド 全ての科目をリストで取得する
-     *
-     * @return 科目のリスト:List<Subject> 存在しない場合は0件のリスト
-     * @throws Exception
-     */
-    public List<Subject> findAll() throws SQLException {
+    public List<Subject> filter(School school) throws SQLException {
         List<Subject> subjectList = new ArrayList<>();
-        Connection connection = null;
+        Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            connection = getConnection();
-            String sql = "SELECT SCHOOL_CD, CD, NAME FROM SUBJECT";
-            pstmt = connection.prepareStatement(sql);
+            con = ds.getConnection();
+            // ★ 学校コードで絞り込むSQLクエリ ★
+            String sql = "SELECT cd, name FROM subject WHERE school_cd = ?";
+            pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, school.getCd());
             rs = pstmt.executeQuery();
 
             while (rs.next()) {
                 Subject subject = new Subject();
-                School s = new School();
-                s.setCd(rs.getString("SCHOOL_CD"));
-                subject.setSchool(s);
-                subject.setCd(rs.getString("CD"));
-                subject.setName(rs.getString("NAME"));
+                subject.setCd(rs.getString("cd"));
+                subject.setName(rs.getString("name"));
                 subjectList.add(subject);
             }
-        } catch (Exception e) {
-            throw new SQLException("科目一覧の取得に失敗しました", e);
+
         } finally {
-            close(pstmt, connection);
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+            closeResources(con, pstmt, rs);
         }
         return subjectList;
     }
 
-    /**
-     * saveメソッド 科目インスタンスをデータベースに保存する データが存在する場合は更新、存在しない場合は登録
-     *
-     * @param subject:Subject
-     * 学生
-     * @return 成功:true, 失敗:false
-     * @throws Exception
-     */
-    public boolean save(Subject subject) throws Exception {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        int count = 0;
+    public Subject findByCd(String cd) throws SQLException {
+        Subject subject = null;
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
 
         try {
-            connection = getConnection();
-            Subject old = get(subject.getCd(), subject.getSchool());
-            if (old == null) {
-                statement = connection.prepareStatement("insert into subject(name, cd, school_cd) values(?, ?, ?)");
-                statement.setString(1, subject.getName());
-                statement.setString(2, subject.getCd());
-                statement.setString(3, subject.getSchool().getCd());
-            } else {
-                statement = connection.prepareStatement("update subject set name=? where cd=?");
-                statement.setString(1, subject.getName());
-                statement.setString(2, subject.getCd());
+            con = ds.getConnection();
+            String sql = "SELECT s.cd, s.name, sc.cd AS school_cd, sc.name AS school_name FROM subject s JOIN school sc ON s.school_cd = sc.cd WHERE s.cd = ?";
+            pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, cd);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                subject = new Subject();
+                subject.setCd(rs.getString("cd"));
+                subject.setName(rs.getString("name"));
+                School school = new School();
+                school.setCd(rs.getString("school_cd"));
+                school.setName(rs.getString("school_name"));
+                subject.setSchool(school);
             }
 
-            count = statement.executeUpdate();
-
-        } catch (Exception e) {
-            throw new SQLException("科目の保存に失敗しました", e);
         } finally {
-            close(statement, connection);
+            closeResources(con, pstmt, rs);
         }
-
-        return count > 0;
+        return subject;
     }
 
-    /**
-     * deleteメソッド 科目をデータベースから削除する
-     *
-     * @param cd:String
-     * 科目コード
-     * @return 成功:true, 失敗:false
-     * @throws Exception
-     */
-    public int delete(String cd) throws Exception {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        int count = 0;
-
+    private void closeResources(Connection con, PreparedStatement pstmt, ResultSet rs) {
         try {
-            connection = getConnection();
-            statement = connection.prepareStatement("delete from subject where cd=?");
-            statement.setString(1, cd);
-            count = statement.executeUpdate();
-        } catch (Exception e) {
-            throw new SQLException("科目の削除に失敗しました", e);
-        } finally {
-            close(statement, connection);
+            if (rs != null) {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-
-        return count;
+        try {
+            if (pstmt != null) {
+                pstmt.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (con != null) {
+                con.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * closeメソッド PreparedStatementとConnectionをクローズする
-     *
-     * @param statement:PreparedStatement
-     * @param connection:Connection
-     */
-    private void close(PreparedStatement statement, Connection connection) {
-        if (statement != null) {
-            try {
-                statement.close();
-            } catch (SQLException sqle) {
-                sqle.printStackTrace();
-            }
-        }
-        if (connection != null) {
-            try {
-                connection.close();
-            } catch (SQLException sqle) {
-                sqle.printStackTrace();
-            }
-        }
-    }
+    // 他のSubjectDaoのメソッド（登録、更新など）も必要に応じて学校コードを考慮するように修正してください。
+    // 例えば、登録処理ではどの学校に科目を登録するのかといった情報が必要になります。
 }

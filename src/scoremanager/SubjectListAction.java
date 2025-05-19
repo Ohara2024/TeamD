@@ -10,6 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import bean.School;
 import bean.Subject;
@@ -22,15 +23,29 @@ public class SubjectListAction extends HttpServlet {
         response.setContentType("text/html; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
+        HttpSession session = request.getSession(false);
 
-        // 学校コードを "oom" で固定
-        String schoolCd = "oom";
+        String schoolCd = null;
+        if (session != null && session.getAttribute("schoolCd") != null) {
+            // ★ セッションからログインしている教師の学校コードを取得 ★
+            schoolCd = (String) session.getAttribute("schoolCd");
+        }
+
+        // もし学校コードが取得できない場合はエラーとするか、適切な処理を行う
+        if (schoolCd == null || schoolCd.isEmpty()) {
+            out.println("<!DOCTYPE html>");
+            out.println("<html lang=\"ja\">");
+            out.println("<head><meta charset=\"UTF-8\"><title>エラー</title></head>");
+            out.println("<body><h1>エラー</h1><p>学校情報が取得できませんでした。ログインし直してください。</p></body></html>");
+            return;
+        }
 
         School school = new School();
         school.setCd(schoolCd);
 
         try {
             SubjectDao subjectDao = new SubjectDao();
+            // ★ 学校コードで絞り込んだ教科一覧を取得 ★
             List<Subject> subjectList = subjectDao.filter(school);
 
             out.println("<!DOCTYPE html>");
@@ -54,7 +69,7 @@ public class SubjectListAction extends HttpServlet {
             out.println("    display: inline-block;");
             out.println("    padding: 0; /* パディングをなくす */");
             out.println("    margin-right: 5px;");
-            out.println("    font-size: 14pxl; /* 少し小さめのフォント */");
+            out.println("    font-size: 14l; /* 少し小さめのフォント */");
             out.println("    text-decoration: none;");
             out.println("    border: none; /* 枠線をなくす */");
             out.println("    background-color: transparent; /* 背景を透明にする */");
@@ -74,7 +89,7 @@ public class SubjectListAction extends HttpServlet {
             out.println("<div class=\"content\">");
             out.println("<h2 style=\"background-color: lightgray; padding: 5px; margin-bottom: 10px;\">科目管理</h2>");
             out.println("<div style=\"text-align: right; margin-bottom: 10px;\">");
-            out.println("<a href=\"r\"class=\"button register-button\">新規登録</a>");
+            out.println("<a href=\"SubjectRegisterFormAction\"class=\"button register-button\">新規登録</a>");
             out.println("</div>");
             out.println("<table>");
             out.println("<thead><tr><th>科目コード</th><th>科目名</th><th>操作</th></tr></thead>"); // "操作"列を追加
@@ -85,8 +100,8 @@ public class SubjectListAction extends HttpServlet {
                 out.println("<td>" + cd + "</td>");
                 out.println("<td>" + subject.getName() + "</td>");
                 out.println("<td style=\"white-space: nowrap;\">"); // ボタンが改行しないように
-                out.println("<a href=\"?cd=" + cd + "\" class=\"button\">変更</a>");
-                out.println("<a href=\"subjectdeleteaction.jsp?cd=" + cd + "&name=" + subject.getName() + "\" class=\"button delete-button\">削除</a>");
+                out.println("<a href=\"SubjectEditFormAction?cd=" + cd + "\" class=\"button\">変更</a>");
+                out.println("<a href=\"SubjectDeleteAction?cd=" + cd + "&name=" + subject.getName() + "\" class=\"button delete-button\">削除</a>");
                 out.println("</td>");
                 out.println("</tr>");
             }

@@ -13,11 +13,11 @@
             padding: 0;
             background-color: #f4f7fa;
             display: flex;
-            flex-direction: column; /* menu-bar と content-area を縦に並べるため、そして中央寄せのため */
-            align-items: center; /* 中央寄せ */
+            flex-direction: column;
+            align-items: center;
             min-height: 100vh;
         }
-        .main-wrapper { /* このクラスは元のHTMLにはありませんでしたが、構造上追加した方が管理しやすいです */
+        .main-wrapper {
             display: flex;
             width: 90%;
             max-width: 1200px;
@@ -27,8 +27,8 @@
             margin: 20px 0;
         }
         .menu-bar {
-            width: 180px; /* 固定幅 */
-            min-width: 180px; /* 縮小しないように */
+            width: 180px;
+            min-width: 180px;
             padding: 20px;
             background-color: #e9eff5;
             border-right: 1px solid #dee2e6;
@@ -56,26 +56,26 @@
             border-radius: 4px;
             transition: background-color 0.3s ease;
         }
-        .menu-bar a:hover, .menu-bar a.active { /* activeクラスのスタイルを追加 */
+        .menu-bar a:hover, .menu-bar a.active {
             background-color: #d1e0ed;
         }
         .content-area {
             flex-grow: 1;
             padding: 30px;
-            width: calc(100% - 220px); /* menu-barの幅を考慮 */
+            width: calc(100% - 220px); /* メニューバーの幅を考慮 */
         }
         .header {
             display: flex;
-            justify-content: space-between; /* タイトルとユーザー情報を両端に */
-            align-items: center; /* 縦方向中央揃え */
+            justify-content: space-between;
+            align-items: center;
             padding-bottom: 20px;
             margin-bottom: 30px;
             border-bottom: 2px solid #007bff;
         }
-        .header h1 { /* H1のスタイルをヘッダー内に移動 */
+        .header h1 {
             color: #2c3e50;
-            margin: 0; /* 余白をリセット */
-            font-size: 1.8em; /* 少し小さく調整 */
+            margin: 0;
+            font-size: 1.8em;
         }
         .header .user-info {
             font-size: 0.9em;
@@ -124,12 +124,12 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1em;
-            max-width: 300px; /* 最大幅を設定 */
+            max-width: 300px;
         }
         input[type="text"]::placeholder {
             color: #aaa;
         }
-        button[type="submit"] { /* buttonではなくbutton[type="submit"]に限定 */
+        button[type="submit"] {
             padding: 10px 25px;
             background-color: #007bff;
             color: white;
@@ -138,7 +138,7 @@
             cursor: pointer;
             font-size: 1em;
             transition: background-color 0.3s ease;
-            margin-left: 115px; /* ラベルの幅 + margin-right に合わせる */
+            margin-left: 115px;
         }
         button[type="submit"]:hover {
             background-color: #0056b3;
@@ -147,14 +147,14 @@
             border-top: 1px solid #e0e0e0;
             margin: 30px 0;
         }
-        .caution, .info-message, .error-message { /* メッセージ表示用の共通スタイル */
+        .caution, .info-message, .error-message {
             margin-top: 20px;
             padding: 15px;
             border-radius: 5px;
             font-size: 0.9em;
             text-align: center;
         }
-        .caution { /* 元のスタイル */
+        .caution {
             background-color: #fff3cd;
             border: 1px solid #ffeeba;
             color: #856404;
@@ -169,16 +169,15 @@
             border: 1px solid #f5c6cb;
             color: #721c24;
         }
-
-        .footer { /* body直下から移動 */
+        .footer {
             width: 100%;
             text-align: center;
             margin-top: 40px;
-            padding: 20px 0; /* 上下のパディング */
+            padding: 20px 0;
             border-top: 1px solid #e0e0e0;
             color: #777;
             font-size: 0.8em;
-            background-color: #f4f7fa; /* 背景色をbodyと合わせる */
+            background-color: #f4f7fa;
         }
     </style>
 </head>
@@ -189,7 +188,7 @@
             <ul>
                 <li><a href="#">学生管理</a></li>
                 <li><a href="#">成績登録</a></li>
-                <li><a href="#" class="active">成績参照</a></li> <%-- 現在のページなので active --%>
+                <li><a href="${pageContext.request.contextPath}/main/TestList.action" class="active">成績参照</a></li>
                 <li><a href="#">成績照会</a></li>
                 <li><a href="#">科目管理</a></li>
             </ul>
@@ -199,31 +198,25 @@
             <div class="header">
                  <h1>成績参照</h1>
                 <span class="user-info">
-                    <c:if test="${not empty sessionScope.teacher}"> <%-- Teacher Beanがセッションに teacher という名前で格納されている想定 --%>
+                    <c:if test="${not empty sessionScope.teacher}">
                         ${sessionScope.teacher.name}さん
                     </c:if>
                     <c:if test="${empty sessionScope.teacher}">
-                        ゲストさん
+                        ゲストさん <%-- ログイン機能がないため、当面はゲスト表示 --%>
                     </c:if>
-                    <a href="#">ログアウト</a> <%-- ログアウト処理へのリンク --%>
+                    <a href="#">ログアウト</a>
                 </span>
             </div>
 
             <%-- エラーメッセージ表示 --%>
             <c:if test="${not empty requestScope.errorMessage}">
-                <p class="error-message">${requestScope.errorMessage}</p>
+                <p class="error-message"><c:out value="${requestScope.errorMessage}"/></p>
             </c:if>
             <%-- 情報メッセージ表示 --%>
-            <c:if test="${not empty requestScope.infoMessage}">
-                <p class="info-message">${requestScope.infoMessage}</p>
+            <c:if test="${not empty requestScope.infoMessage && empty requestScope.errorMessage}">
+                <p class="info-message"><c:out value="${requestScope.infoMessage}"/></p>
             </c:if>
 
-            <%-- 科目情報で検索フォーム --%>
-            <%-- このフォームは TestListAction の doGet で準備されたデータで成績一覧画面(test_list_student.jsp)を初期表示し、
-                 そこから科目等を絞り込むUIを想定しているため、この test_list.jsp は本来不要かもしれません。
-                 もしこの画面を成績参照機能のトップページとするなら、action先は TestListAction で、
-                 TestListActionのdoGetはこの画面にフォワードし、doPostで検索条件を受け取る形になります。
-                 ここでは、image_0d1170.png のUIを再現する形で残します。 --%>
             <form action="${pageContext.request.contextPath}/main/TestList.action" method="post">
                 <div class="search-section">
                     <h2>科目情報で検索</h2>
@@ -231,47 +224,27 @@
                         <label for="entYear">入学年度</label>
                         <select id="entYear" name="entYear">
                             <option value="">選択してください</option>
-                            <c:if test="${not empty requestScope.entYearSet}">
-                                <c:forEach var="year" items="${requestScope.entYearSet}">
-                                    <option value="${year}" ${year == requestScope.fEntYear ? 'selected' : ''}>${year}</option>
-                                </c:forEach>
-                            </c:if>
-                            <c:if test="${empty requestScope.entYearSet}">
-                                <%-- フォールバックまたは静的データ（例） --%>
-                                <option value="2024">2024</option>
-                                <option value="2023">2023</option>
-                                <option value="2022">2022</option>
-                            </c:if>
+                            <c:forEach var="year" items="${requestScope.entYearSet}">
+                                <option value="${year}" ${year == requestScope.fEntYear ? 'selected' : ''}>${year}</option>
+                            </c:forEach>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="classNum">クラス</label>
                         <select id="classNum" name="classNum">
                             <option value="">選択してください</option>
-                            <c:if test="${not empty requestScope.classNumSet}">
-                                <c:forEach var="classVal" items="${requestScope.classNumSet}">
-                                    <option value="${classVal}" ${classVal == requestScope.fClassNum ? 'selected' : ''}>${classVal}</option>
-                                </c:forEach>
-                            </c:if>
-                             <c:if test="${empty requestScope.classNumSet}">
-                                <option value="101">101</option>
-                                <option value="201">201</option>
-                            </c:if>
+                            <c:forEach var="classVal" items="${requestScope.classNumSet}">
+                                <option value="${classVal}" ${classVal == requestScope.fClassNum ? 'selected' : ''}>${classVal}</option>
+                            </c:forEach>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="subjectCd">科目</label>
                         <select id="subjectCd" name="subjectCd">
                             <option value="">選択してください</option>
-                             <c:if test="${not empty requestScope.subjects}">
-                                <c:forEach var="subject" items="${requestScope.subjects}">
-                                    <option value="${subject.cd}" ${subject.cd == requestScope.fSubjectCd ? 'selected' : ''}>${subject.name}</option>
-                                </c:forEach>
-                            </c:if>
-                            <c:if test="${empty requestScope.subjects}">
-                                <option value="S001">情報処理基礎</option>
-                                <option value="S002">プログラミング</option>
-                            </c:if>
+                             <c:forEach var="subject" items="${requestScope.subjects}">
+                                <option value="${subject.cd}" ${subject.cd == requestScope.fSubjectCd ? 'selected' : ''}>${subject.name}</option>
+                            </c:forEach>
                         </select>
                     </div>
                     <button type="submit">検索</button>
@@ -280,7 +253,6 @@
 
             <div class="separator"></div>
 
-            <%-- 学生情報で検索フォーム --%>
             <form action="${pageContext.request.contextPath}/main/TestList.action" method="post">
                 <div class="search-section">
                     <h2>学生情報で検索</h2>
@@ -292,11 +264,12 @@
                 </div>
             </form>
 
-            <p class="caution">科目情報を選択または学生情報を入力して検索ボタンをクリックしてください。</p>
+            <%-- 初期表示時の案内メッセージはサーブレットから infoMessage として渡される想定 --%>
+            <%-- <p class="caution">科目情報を選択または学生情報を入力して検索ボタンをクリックしてください。</p> --%>
         </div>
     </div>
     <div class="footer">
-        © <%= java.time.Year.now().getValue() %> TIC<br> <%-- 現在の年を動的に表示 --%>
+        © <%= java.time.Year.now().getValue() %> TIC<br>
         大原学園
     </div>
 </body>

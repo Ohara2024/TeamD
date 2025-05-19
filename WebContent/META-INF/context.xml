@@ -4,7 +4,7 @@
     <Resource name="jdbc/yajima"
               auth="Container"
               type="org.apache.tomcat.jdbc.pool.DataSource"  factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" driverClassName="org.h2.Driver"
-              url="jdbc:h2:tcp://localhost/~/exam" username="sa"
+              username="sa"
               password=""
               
               initialSize="5"
@@ -20,6 +20,6 @@
               removeAbandonedOnBorrow="true"
               removeAbandonedTimeout="60"
               logAbandoned="true"
-              />
+              url="jdbc:h2:tcp://localhost/~/TeamD"/>
 
 </Context>

@@ -20,6 +20,6 @@
               removeAbandonedOnBorrow="true"
               removeAbandonedTimeout="60"
               logAbandoned="true"
-              url="jdbc:h2:tcp://localhost/~/TeamD"/>
+              url="jdbc:h2:tcp://localhost/~/exam"/>
 
 </Context>

@@ -31,7 +31,7 @@ public class SubjectListAction extends HttpServlet {
             schoolCd = (String) session.getAttribute("schoolCd");
         }
 
-        // もし学校コードが取得できない場合はエラーとするか、適切な処理を行う
+        
         if (schoolCd == null || schoolCd.isEmpty()) {
             out.println("<!DOCTYPE html>");
             out.println("<html lang=\"ja\">");

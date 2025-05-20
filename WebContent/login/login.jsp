@@ -141,9 +141,9 @@
             <% } %>
         </div>
         <form action="<%= request.getContextPath() %>/login" method="post">
-            <div>
-                <label for="username">ユーザー名:</label>
-                <input type="text" id="username" name="username">
+             <div>
+                <label for="teacherId">教員ID:</label>  <%-- 表示テキストも変更 (任意) --%>
+                <input type="text" id="teacherId" name="teacherId"> <%-- name属性を "teacherId" に変更 --%>
             </div>
             <div>
                 <label for="password">パスワード:</label>

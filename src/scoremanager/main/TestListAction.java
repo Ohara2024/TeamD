@@ -1,4 +1,4 @@
-package servlet;
+package scoremanager.main;
 
 import java.io.IOException;
 import java.util.ArrayList;

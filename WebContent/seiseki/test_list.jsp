@@ -187,7 +187,7 @@
             <h3>メニュー</h3>
             <ul>
                 <li><a href="#">学生管理</a></li>
-                <li><a href="#">成績登録</a></li>
+                <li><a href="test_regist.jsp">成績登録</a></li>
                 <li><a href="${pageContext.request.contextPath}/main/TestList.action" class="active">成績参照</a></li>
                 <li><a href="#">成績照会</a></li>
                 <li><a href="#">科目管理</a></li>

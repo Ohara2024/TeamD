@@ -45,7 +45,7 @@ public class SubjectListAction extends HttpServlet {
 
         try {
             SubjectDao subjectDao = new SubjectDao();
-            // ★ 学校コードで絞り込んだ教科一覧を取得 ★
+
             List<Subject> subjectList = subjectDao.filter(school);
 
             out.println("<!DOCTYPE html>");

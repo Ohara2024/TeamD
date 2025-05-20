@@ -114,7 +114,7 @@ public class LoginServlet extends HttpServlet {
 
                 // menu.jsp ではなく、TestList.action にリダイレクトして成績参照画面に遷移する例
                 // response.sendRedirect(request.getContextPath() + "/login/menu.jsp");
-                response.sendRedirect(request.getContextPath() + "/main/TestList.action");
+                response.sendRedirect(request.getContextPath() + "/login/menu.jsp");
 
             } else {
                 // 認証失敗

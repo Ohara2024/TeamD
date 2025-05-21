@@ -38,6 +38,11 @@
             padding-right: 20px;
             font-size: 14px;
         }
+        .user-info {
+            margin-right: auto;
+            font-weight: bold;
+            color: #333;
+        }
         .header-right a {
             color: #007bff;
             text-decoration: none;
@@ -45,6 +50,24 @@
         .header-right a:hover {
             text-decoration: underline;
         }
+        /* ★ここを修正：.logout-link のスタイルを削除しました */
+        /*
+        .logout-link {
+            text-decoration: none;
+            color: #d32f2f;
+            padding: 8px 15px;
+            border: 1px solid #d32f2f;
+            border-radius: 3px;
+            background-color: #ffebee;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin-left: 20px;
+        }
+        .logout-link:hover {
+            background-color: #d32f2f;
+            color: #fff;
+        }
+        */
+        /* ★ここまで修正 */
 
         .main-wrapper {
             display: flex;
@@ -118,11 +141,10 @@
             font-size: 16px;
             color: #333;
             margin-top: 0;
-            margin-bottom: 15px; /* テーブルとの間隔を調整 */
+            margin-bottom: 15px;
             font-weight: bold;
         }
 
-        /* 新規登録リンクのスタイル */
         .register-link-container {
             text-align: right;
             margin-bottom: 10px;
@@ -141,7 +163,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 0; /* h2との間隔はh2のmargin-bottomで制御 */
+            margin-top: 0;
         }
         th, td {
             border: 1px solid #ddd;
@@ -154,12 +176,15 @@
         }
         .action-links a {
             margin-right: 10px;
-            color: #007bff;
+            color: #007bff; /* 他のリンクと同じデフォルト色に戻す */
             text-decoration: none;
         }
+        /* ↓ このCSSルールを削除しました ↓ */
+        /*
         .action-links a.delete-link {
             color: #dc3545;
         }
+        */
         .action-links a:hover {
             text-decoration: underline;
         }
@@ -182,18 +207,19 @@
         <h1>得点管理システム</h1>
         <div class="header-right">
             <%
-                Teacher currentTeacher = (Teacher) session.getAttribute("currentTeacher");
-                if (currentTeacher != null) {
-            %>
-                <span><%= currentTeacher.getName() %>様</span>
-            <%
-                } else {
-            %>
-                <span>ゲスト様</span>
-            <%
+                // セッションからTeacherオブジェクトを取得
+                // LoginServletで "teacher" というキー名で保存されている前提
+                Teacher teacher = (Teacher) session.getAttribute("teacher");
+
+                String teacherName = "ゲスト"; // デフォルトの名前
+                // teacherオブジェクトが存在し、名前がnullでなく空文字列でない場合に名前を設定
+                if (teacher != null && teacher.getName() != null && !teacher.getName().isEmpty()) {
+                    teacherName = teacher.getName();
                 }
             %>
-            <a href="<%= request.getContextPath() %>/LogoutAction">ログアウト</a>
+            <div class="user-info"><%= teacherName %> さん</div>
+            <%-- ★ここを修正：class="logout-link" を削除しました --%>
+            <a href="<%= request.getContextPath() %>/login/logout">ログアウト</a>
         </div>
     </header>
 
@@ -201,13 +227,15 @@
         <div class="left-panel">
             <h2>科目管理</h2>
             <ul>
-                <li><a href="SubjectListAction" class="active">科目管理</a></li>
-          
+                <li><a href="<%= request.getContextPath() %>/SubjectListAction" class="active">科目管理</a></li>
+                <li><a href="<%= request.getContextPath() %>/main/StudentList.action">学生管理</a></li>
+                <li><a href="<%= request.getContextPath() %>/main/TestList.action">成績参照</a></li>
             </ul>
         </div>
 
         <div class="content-area">
             <%
+                // リクエストスコープからメッセージと成功/失敗フラグを取得
                 String statusMessage = (String) request.getAttribute("message");
                 Boolean isSuccessObj = (Boolean) request.getAttribute("isSuccess");
                 boolean isSuccess = (isSuccessObj != null) ? isSuccessObj.booleanValue() : false;
@@ -223,8 +251,6 @@
 
             <h2>科目情報一覧</h2>
 
-            <%-- 絞り込みフォームを削除 --%>
-
             <div class="register-link-container">
                 <a href="<%= request.getContextPath() %>/SubjectCreateAction" class="register-text-link">新規登録</a>
             </div>
@@ -239,7 +265,9 @@
                 </thead>
                 <tbody>
                     <%
-                        List<Subject> subjects = (List<Subject>) request.getAttribute("subjects");
+                        // SubjectListActionから渡された科目リストを取得
+                        List<Subject> subjects = (List<Subject>) request.getAttribute("subjectList"); // SubjectListActionで設定したキー名
+
                         if (subjects != null && !subjects.isEmpty()) {
                             for (Subject subject : subjects) {
                     %>
@@ -247,8 +275,8 @@
                                     <td><%= subject.getCd() %></td>
                                     <td><%= subject.getName() %></td>
                                     <td class="action-links">
-                                        <a href="SubjectUpdateAction?cd=<%= subject.getCd() %>">編集</a>
-                                        <a href="SubjectDeleteAction?cd=<%= subject.getCd() %>&name=<%= subject.getName() %>" class="delete-link">削除</a>
+                                        <%-- 削除リンクのクラスは残しますが、CSSは削除しました --%>
+                                        <a href="<%= request.getContextPath() %>/SubjectDeleteAction?cd=<%= subject.getCd() %>&name=<%= subject.getName() %>">削除</a>
                                     </td>
                                 </tr>
                     <%

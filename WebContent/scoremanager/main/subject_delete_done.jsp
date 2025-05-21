@@ -1,15 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="bean.Subject" %>
 <%@ page import="bean.Teacher" %>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>科目削除結果</title>
+    <title>科目削除完了</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            background-color: #ffffff; /* ボディ全体の背景色を白に修正 */
+            background-color: #f8f8f8;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -36,6 +37,11 @@
             padding-right: 20px;
             font-size: 14px;
         }
+        .user-info {
+            margin-right: auto;
+            font-weight: bold;
+            color: #333;
+        }
         .header-right a {
             color: #007bff;
             text-decoration: none;
@@ -43,95 +49,90 @@
         .header-right a:hover {
             text-decoration: underline;
         }
-
-        .main-wrapper { /* bodyとfooterの間の全体エリア */
-            display: flex; /* flexboxでサイドとコンテンツを並べる */
-            flex-grow: 1;
-        }
-
-        .left-panel { /* 左側の「科目情報削除」タイトルと「科目一覧」リンク */
-            width: 200px; /* 固定幅 */
-            padding: 20px 0 20px 20px; /* 上下左右パディング */
-            box-sizing: border-box;
-            background-color: #ffffff; /* 白背景 */
-            border-right: 1px solid #e0e0e0; /* 右側の線 */
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05); /* 軽い影 */
-        }
-        .left-panel h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 18px; /* 画像に合わせたサイズ */
-            color: #333;
-            padding-left: 0; /* 左寄せ */
-        }
-        .left-panel a { /* 左パネル内のリンクのスタイル */
-            display: block; /* ブロック要素にして縦に積む */
+        /* ★ここを修正：.logout-link のスタイルを削除しました */
+        /*
+        .logout-link {
             text-decoration: none;
-            color: #007bff;
-            padding: 5px 0;
-            font-size: 14px;
+            color: #d32f2f;
+            padding: 8px 15px;
+            border: 1px solid #d32f2f;
+            border-radius: 3px;
+            background-color: #ffebee;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin-left: 20px;
         }
-        .left-panel a:hover {
-            text-decoration: underline;
+        .logout-link:hover {
+            background-color: #d32f2f;
+            color: #fff;
         }
-
-        .content-area { /* 右側のメッセージ表示エリア */
-            flex-grow: 1; /* 残りのスペースを占める */
-            padding: 30px; /* 内側のパディング */
+        */
+        /* ★ここまで修正 */
+        .main-wrapper {
+            flex-grow: 1;
+            padding: 30px;
             box-sizing: border-box;
-            background-color: #ffffff; /* 白背景 */
+            background-color: #ffffff;
+            text-align: center;
         }
-
-        .success-message-box { /* 薄い緑色の「削除が完了しました」ボックス */
-            background-color: #e6ffe6; /* 薄い緑色 */
-            border: 1px solid #a3e0a3; /* 緑色の枠線 */
-            padding: 10px 15px;
-            margin-bottom: 20px;
-            font-size: 16px;
-            color: #333; /* 文字色を黒に */
-            text-align: left; /* 左寄せ */
+        .container {
+            width: 500px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
         }
-        .error-message-box { /* エラー時のボックス（もしあれば） */
-            background-color: #ffe6e6; /* 薄い赤色 */
-            border: 1px solid #e0a3a3; /* 赤色の枠線 */
-            padding: 10px 15px;
-            margin-bottom: 20px;
-            font-size: 16px;
+        h2 {
+            font-size: 20px;
             color: #333;
-            text-align: left;
+            margin-bottom: 25px;
+            text-align: center;
         }
-
-        .content-area p { /* content-area内のpタグ（メッセージ本文など） */
+        p {
             font-size: 16px;
             color: #555;
-            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .success-message {
+            color: #28a745; /* 緑色 */
+            font-weight: bold;
+            font-size: 18px;
             margin-bottom: 30px;
-            text-align: left;
         }
-
-        /* 「科目一覧に戻る」リンクのためのスタイル */
-        .return-link {
-            display: inline-block;
-            color: #007bff;
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .button-group a {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
             text-decoration: none;
-            font-size: 14px;
-            margin-top: 20px;
-            padding: 0;
+            display: inline-block;
+            text-align: center;
+            line-height: normal;
         }
-        .return-link:hover {
-            text-decoration: underline;
+        .back-to-list-button {
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
         }
-
-        .footer { /* フッターのスタイル */
-            text-align: center; /* 中央揃え */
+        .back-to-list-button:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            text-align: center;
             font-size: 12px;
             color: #333;
             padding: 20px;
             border-top: 1px solid #ccc;
-            background-color: #f0f0f0; /* 薄いグレーの背景 */
-            width: 100%; /* 幅100% */
-            box-sizing: border-box; /* paddingを含めて幅を計算 */
-            margin-top: auto; /* main-wrapperがコンテンツの高さに応じて伸縮するため、フッターを下に固定 */
+            background-color: #f0f0f0;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: auto;
         }
     </style>
 </head>
@@ -140,44 +141,41 @@
         <h1>得点管理システム</h1>
         <div class="header-right">
             <%
-                Teacher currentTeacher = (Teacher) session.getAttribute("currentTeacher");
-                if (currentTeacher != null) {
-            %>
-                <span><%= currentTeacher.getName() %>様</span>
-            <%
-                } else {
-            %>
-                <span>ゲスト様</span>
-            <%
+                Teacher teacher = (Teacher) session.getAttribute("teacher");
+                String teacherName = "ゲスト";
+                if (teacher != null && teacher.getName() != null && !teacher.getName().isEmpty()) {
+                    teacherName = teacher.getName();
                 }
             %>
-            <a href="<%= request.getContextPath() %>/LogoutAction">ログアウト</a>
+            <div class="user-info"><%= teacherName %> さん</div>
+            <%-- ★ここを修正：class="logout-link" を削除しました --%>
+            <a href="<%= request.getContextPath() %>/login/logout">ログアウト</a>
         </div>
     </header>
 
     <div class="main-wrapper">
-        <div class="left-panel">
-            <h2>科目情報削除</h2>
-            <a href="SubjectListAction">科目管理</a>
-        </div>
-
-        <div class="content-area">
+        <div class="container">
+            <h2>科目削除完了</h2>
             <%
-                String message = (String) request.getAttribute("message");
-                Boolean isSuccessObj = (Boolean) request.getAttribute("isSuccess");
-                boolean isSuccess = (isSuccessObj != null) ? isSuccessObj.booleanValue() : false;
+                Subject deletedSubject = (Subject) request.getAttribute("deletedSubject");
+
+                if (deletedSubject != null) {
             %>
-            <%-- 削除結果メッセージボックス --%>
-            <div class="<%= isSuccess ? "success-message-box" : "error-message-box" %>">
-                <%= isSuccess ? "削除が完了しました" : "削除に失敗しました" %>
+                    <p class="success-message">以下の科目を削除しました。</p>
+                    <p><strong>科目コード:</strong> <%= deletedSubject.getCd() %></p>
+                    <p><strong>科目名:</strong> <%= deletedSubject.getName() %></p>
+            <%
+                } else {
+            %>
+                    <p class="success-message">科目の削除が完了しました。</p>
+                    <p>削除された科目情報は表示できません。</p>
+            <%
+                }
+            %>
+
+            <div class="button-group">
+                <a href="<%= request.getContextPath() %>/SubjectListAction" class="back-to-list-button">科目一覧に戻る</a>
             </div>
-
-            <%-- 詳細メッセージ（もしあれば） --%>
-            <% if (message != null && !message.isEmpty()) { %>
-                <p><%= message %></p>
-            <% } %>
-
-            <a href="SubjectListAction" class="return-link">科目一覧に戻る</a>
         </div>
     </div>
 

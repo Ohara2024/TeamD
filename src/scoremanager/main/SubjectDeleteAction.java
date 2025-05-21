@@ -1,4 +1,4 @@
-package scoremanager.main; // この行を修正
+package scoremanager.main;
 
 import java.io.IOException;
 
@@ -10,68 +10,74 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import bean.School; // Schoolクラスをインポート
 import bean.Subject;
+import bean.Teacher;
 import dao.SubjectDao;
 
-@WebServlet(urlPatterns = { "/SubjectDeleteAction" })
+@WebServlet(urlPatterns={"/SubjectDeleteAction"})
 public class SubjectDeleteAction extends HttpServlet {
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
 
-        String cd = request.getParameter("cd");
         HttpSession session = request.getSession(false);
-        String schoolCd = null;
 
-        if (session != null && session.getAttribute("schoolCd") != null) {
-            schoolCd = (String) session.getAttribute("schoolCd");
+        Teacher teacher = null;
+        School school = null; // Schoolオブジェクトを追加
+        if (session != null) {
+            teacher = (Teacher) session.getAttribute("teacher");
+            // ★重要: LoginServletで "loginSchool" というキーでSchoolオブジェクトがセッションに保存されている必要があります。
+            school = (School) session.getAttribute("loginSchool");
         }
 
-        if (cd == null || cd.isEmpty()) {
-            System.out.println("SubjectDeleteAction: 科目CDが提供されていません。"); // ★ ログ出力 ★
-            response.sendRedirect("SubjectListAction");
+        // ログイン状態と学校コードの確認
+        if (teacher == null || school == null || school.getCd() == null || school.getCd().isEmpty()) {
+            request.setAttribute("errorMessage", "学校情報が取得できませんでした。ログインし直してください。");
+            request.getRequestDispatcher("/scoremanager/main/login.jsp").forward(request, response);
             return;
         }
 
-        if (schoolCd == null || schoolCd.isEmpty()) {
-            System.out.println("SubjectDeleteAction: 学校情報が取得できませんでした。"); // ★ ログ出力 ★
-            response.sendRedirect("SubjectListAction?error=noschool"); // エラーパラメータを追加
-            return;
-        }
+        String schoolCd = school.getCd(); // 学校コードを取得
 
+        // パラメータから削除対象の科目コードを取得
+        String cd = request.getParameter("cd");
+
+        Subject subject = null;
         try {
             SubjectDao subjectDao = new SubjectDao();
-            Subject subject = subjectDao.findByCd(cd);
+            // 科目コードと学校コードで科目情報を取得
+            subject = subjectDao.get(cd, schoolCd); // SubjectDao.get(String, String) を呼び出す
 
-            System.out.println("SubjectDeleteAction: 取得した Subject オブジェクト: " + subject); // ★ ログ出力 ★
-
-            if (subject != null && subject.getSchool().getCd().equals(schoolCd)) {
-                System.out.println("SubjectDeleteAction: 科目CD: " + subject.getCd() + ", 科目名: " + subject.getName() + ", 学校コード: " + subject.getSchool().getCd()); // ★ ログ出力 ★
-                request.setAttribute("cd", subject.getCd());
-                request.setAttribute("name", subject.getName());
-                request.getRequestDispatcher("subjectDeleteConfirm.jsp").forward(request, response);
-            } else if (subject == null) {
-                System.out.println("SubjectDeleteAction: 科目が見つかりませんでした - CD: " + cd); // ★ ログ出力 ★
-                response.sendRedirect("SubjectListAction?error=notfound");
-            } else {
-                System.out.println("SubjectDeleteAction: 削除しようとした科目は異なる学校に属しています - CD: " + cd + ", 学校コード: " + subject.getSchool().getCd() + ", ログイン教師の学校コード: " + schoolCd); // ★ ログ出力 ★
-                response.sendRedirect("SubjectListAction?error=permission"); // エラーパラメータを追加
+            if (subject == null) {
+                // 指定された科目コードの科目が見つからない場合
+                request.setAttribute("errorMessage", "指定された科目が見つかりませんでした。");
+                request.getRequestDispatcher("/SubjectListAction").forward(request, response); // 科目一覧に戻す
+                return;
             }
+
+            // 取得した科目オブジェクトをリクエストスコープに保存
+            request.setAttribute("subject", subject);
+
+            // 削除確認JSPへフォワード
+            request.getRequestDispatcher("/scoremanager/main/subject_delete.jsp").forward(request, response);
 
         } catch (NamingException e) {
             e.printStackTrace();
-            System.err.println("SubjectDeleteAction: 初期化エラーが発生しました: " + e.getMessage()); // ★ エラーログ出力 ★
-            request.setAttribute("errorMessage", "初期化エラーが発生しました。");
-            request.getRequestDispatcher("error.jsp").forward(request, response);
+            request.setAttribute("errorMessage", "データベース接続設定が見つかりません。システム管理者に連絡してください。");
+            request.getRequestDispatcher("/scoremanager/main/error.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("SubjectDeleteAction: 科目の検索に失敗しました: " + e.getMessage()); // ★ エラーログ出力 ★
-            request.setAttribute("errorMessage", "科目の検索に失敗しました。");
-            request.getRequestDispatcher("error.jsp").forward(request, response);
+            request.setAttribute("errorMessage", "科目情報の取得に失敗しました。システム管理者に連絡してください。");
+            request.getRequestDispatcher("/scoremanager/main/error.jsp").forward(request, response);
         }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 通常、確認画面への遷移はGETで行われるため、POSTでここに来た場合はGETと同じ処理にフォワード
+        doGet(request, response);
     }
 }

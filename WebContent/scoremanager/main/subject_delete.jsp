@@ -1,15 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="bean.Subject" %>
 <%@ page import="bean.Teacher" %>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>科目情報削除</title>
+    <title>科目削除確認</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            background-color: #ffffff;
+            background-color: #f8f8f8;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -36,6 +37,11 @@
             padding-right: 20px;
             font-size: 14px;
         }
+        .user-info {
+            margin-right: auto;
+            font-weight: bold;
+            color: #333;
+        }
         .header-right a {
             color: #007bff;
             text-decoration: none;
@@ -43,97 +49,95 @@
         .header-right a:hover {
             text-decoration: underline;
         }
+        /* ★ここを修正：.logout-link のスタイルを削除しました */
+        /*
+        .logout-link {
+            text-decoration: none;
+            color: #d32f2f;
+            padding: 8px 15px;
+            border: 1px solid #d32f2f;
+            border-radius: 3px;
+            background-color: #ffebee;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin-left: 20px;
+        }
+        .logout-link:hover {
+            background-color: #d32f2f;
+            color: #fff;
+        }
+        */
+        /* ★ここまで修正 */
 
         .main-wrapper {
-            display: flex;
-            flex-grow: 1;
-        }
-
-        .left-panel {
-            width: 200px;
-            padding: 20px 0 20px 20px;
-            box-sizing: border-box;
-            background-color: #ffffff;
-            border-right: 1px solid #e0e0e0;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-        }
-        .left-panel h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 18px;
-            color: #333;
-            padding-left: 0;
-        }
-        .left-panel a {
-            display: block;
-            text-decoration: none;
-            color: #007bff;
-            padding: 5px 0;
-            font-size: 14px;
-        }
-        .left-panel a:hover {
-            text-decoration: underline;
-        }
-
-        .content-area {
             flex-grow: 1;
             padding: 30px;
             box-sizing: border-box;
             background-color: #ffffff;
+            text-align: center;
         }
-
-        .content-area h2 {
-             font-size: 16px;
-             color: #333;
-             margin-top: 0;
-             margin-bottom: 15px;
-             font-weight: bold;
+        .container {
+            width: 500px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
         }
-        .content-area p {
+        h2 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        p {
             font-size: 16px;
             color: #555;
-            line-height: 1.5;
             margin-bottom: 20px;
         }
-        .action-area { /* ボタンとリンクをまとめる新しいコンテナ */
+        .confirm-info {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        .confirm-info p {
+            margin: 5px 0;
+            color: #333;
+            font-weight: bold;
+        }
+        .button-group {
             display: flex;
-            flex-direction: column; /* 要素を縦に並べる */
-            gap: 10px; /* 要素間のスペース */
-            margin-top: 20px;
-            align-items: flex-start; /* 左寄せ */
+            justify-content: center;
+            gap: 20px;
+        }
+        .button-group button, .button-group a {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none; /* aタグの装飾を解除 */
+            display: inline-block; /* aタグをボタンのように扱う */
+            text-align: center;
+            line-height: normal; /* aタグのテキストが中央にくるように */
         }
         .delete-button {
-            display: inline-block;
-            padding: 5px 10px;
-            font-size: 14px;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 5px;
-            cursor: pointer;
-            border: 1px solid;
-            background-color: #dc3545; /* 赤色 */
+            background-color: #dc3545;
             color: white;
-            border-color: #dc3545;
             transition: background-color 0.3s ease;
         }
         .delete-button:hover {
             background-color: #c82333;
-            border-color: #c82333;
         }
-
-        /* 「戻る」リンクのスタイル */
-        .return-text-link { /* 純粋なテキストリンクとして定義 */
-            display: inline-block; /* 必要に応じて調整 */
-            color: #007bff; /* 青色 */
-            text-decoration: none; /* 下線なし */
-            font-size: 14px; /* 適切なフォントサイズ */
-            padding: 0; /* パディングなし */
-            margin-top: 0; /* 上のマージンはflexboxのgapで制御 */
+        .back-button {
+            background-color: #6c757d;
+            color: white;
+            transition: background-color 0.3s ease;
         }
-        .return-text-link:hover {
-            text-decoration: underline; /* ホバーで下線 */
+        .back-button:hover {
+            background-color: #5a6268;
         }
-
         .footer {
             text-align: center;
             font-size: 12px;
@@ -152,38 +156,49 @@
         <h1>得点管理システム</h1>
         <div class="header-right">
             <%
-                Teacher currentTeacher = (Teacher) session.getAttribute("currentTeacher");
-                if (currentTeacher != null) {
-            %>
-                <span><%= currentTeacher.getName() %>様</span>
-            <%
-                } else {
-            %>
-                <span>ゲスト様</span>
-            <%
+                Teacher teacher = (Teacher) session.getAttribute("teacher");
+                String teacherName = "ゲスト";
+                if (teacher != null && teacher.getName() != null && !teacher.getName().isEmpty()) {
+                    teacherName = teacher.getName();
                 }
             %>
-            <a href="<%= request.getContextPath() %>/LogoutAction">ログアウト</a>
+            <div class="user-info"><%= teacherName %> さん</div>
+            <%-- ★ここを修正：class="logout-link" を削除しました --%>
+            <a href="<%= request.getContextPath() %>/login/logout">ログアウト</a>
         </div>
     </header>
 
     <div class="main-wrapper">
-        <div class="left-panel">
-            <h2>科目情報削除</h2>
-            <a href="SubjectListAction">科目管理</a>
-        </div>
+        <div class="container">
+            <h2>科目削除確認</h2>
+            <%
+                Subject subject = (Subject) request.getAttribute("subject");
 
-        <div class="content-area">
-            <h2>科目情報削除</h2>
-            <p>「<%= request.getParameter("name") %>」（<%= request.getParameter("cd") %>）を削除してもよろしいですか？</p>
-            <div class="action-area"> <%-- ボタンとリンクを縦に配置するための新しいコンテナ --%>
-                <form action="<%= request.getContextPath() %>/SubjectDeleteExecuteAction" method="post">
-                    <input type="hidden" name="cd" value="<%= request.getParameter("cd") %>">
-                    <button type="submit" class="delete-button">削除</button>
-                </form>
-                <%-- 「戻る」リンクを削除ボタンの下に配置し、ボタンデザインをなくす --%>
-                <a href="SubjectListAction" class="return-text-link">戻る</a>
-            </div>
+                if (subject != null) {
+            %>
+                    <p>以下の科目を削除してもよろしいですか？</p>
+                    <div class="confirm-info">
+                        <p>科目コード: <%= subject.getCd() %></p>
+                        <p>科目名: <%= subject.getName() %></p>
+                    </div>
+
+                    <div class="button-group">
+                        <form action="<%= request.getContextPath() %>/SubjectDeleteExecuteAction" method="post" style="display:inline;">
+                            <input type="hidden" name="cd" value="<%= subject.getCd() %>">
+                            <button type="submit" class="delete-button">削除</button>
+                        </form>
+                        <a href="<%= request.getContextPath() %>/SubjectListAction" class="back-button">戻る</a>
+                    </div>
+            <%
+                } else {
+            %>
+                    <p>削除する科目情報がありません。</p>
+                    <div class="button-group">
+                        <a href="<%= request.getContextPath() %>/SubjectListAction" class="back-button">科目一覧に戻る</a>
+                    </div>
+            <%
+                }
+            %>
         </div>
     </div>
 

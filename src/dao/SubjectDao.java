@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import bean.School;
 import bean.Subject;
@@ -251,4 +252,11 @@ public class SubjectDao extends Dao {
 			return false;
 		}
 	}
+
+	public static List<Map<String, String>> findAll(School school) {
+		// TODO 自動生成されたメソッド・スタブ
+		return null;
+	}
+
+
 }

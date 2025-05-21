@@ -1,4 +1,4 @@
-package scoremanager;
+package scoremanager.main; // この行を修正
 
 import java.io.IOException;
 

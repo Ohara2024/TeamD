@@ -89,7 +89,7 @@ public class SubjectListAction extends HttpServlet {
             out.println("<div class=\"content\">");
             out.println("<h2 style=\"background-color: lightgray; padding: 5px; margin-bottom: 10px;\">科目管理</h2>");
             out.println("<div style=\"text-align: right; margin-bottom: 10px;\">");
-            out.println("<a href=\"SubjectRegisterFormAction\"class=\"button register-button\">新規登録</a>");
+            out.println("<a href=\"subject_create.jsp\"class=\"button register-button\">新規登録</a>");
             out.println("</div>");
             out.println("<table>");
             out.println("<thead><tr><th>科目コード</th><th>科目名</th><th>操作</th></tr></thead>"); // "操作"列を追加
@@ -100,7 +100,6 @@ public class SubjectListAction extends HttpServlet {
                 out.println("<td>" + cd + "</td>");
                 out.println("<td>" + subject.getName() + "</td>");
                 out.println("<td style=\"white-space: nowrap;\">"); // ボタンが改行しないように
-                out.println("<a href=\"SubjectEditFormAction?cd=" + cd + "\" class=\"button\">変更</a>");
                 out.println("<a href=\"SubjectDeleteAction?cd=" + cd + "&name=" + subject.getName() + "\" class=\"button delete-button\">削除</a>");
                 out.println("</td>");
                 out.println("</tr>");

@@ -2,7 +2,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%
     session.invalidate(); // セッションを無効化
-    response.sendRedirect(request.getContextPath() + "/login/login.jsp?logout=true"); // ログイン画面へリダイレクト
+    response.sendRedirect(request.getContextPath() + "/scoremanager/main/login.jsp?logout=true"); // ログイン画面へリダイレクト
 %>
 <!DOCTYPE html>
 <html>

@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-@WebServlet("/login/logout.jsp") // ログアウト要求を処理するURL
+@WebServlet("/login/logout") // ログアウト要求を処理するURL
 public class LogoutServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -24,6 +24,6 @@ public class LogoutServlet extends HttpServlet {
         }
 
         // 3. ログアウト完了画面 (logout_completed.jsp) へリダイレクト
-        response.sendRedirect(request.getContextPath() + "/login/logout_completed.jsp");
+        response.sendRedirect(request.getContextPath() + "/scoremanager/main/logout_completed.jsp");
     }
 }

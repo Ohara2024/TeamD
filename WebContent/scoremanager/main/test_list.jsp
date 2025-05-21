@@ -204,7 +204,7 @@
                     <c:if test="${empty sessionScope.teacher}">
                         ゲストさん <%-- ログイン機能がないため、当面はゲスト表示 --%>
                     </c:if>
-                    <a href="#">ログアウト</a>
+                    <a href="<%= request.getContextPath() %>/logout.jsp" class="logout-link">ログアウト</a>
                 </span>
             </div>
 

@@ -64,7 +64,7 @@
                  <span class="user-info">
                     <c:if test="${not empty sessionScope.teacher}">${sessionScope.teacher.name}さん</c:if>
                     <c:if test="${empty sessionScope.teacher}">ゲストさん</c:if>
-                    <a href="#">ログアウト</a>
+                    <a href="<%= request.getContextPath() %>/logout.jsp" class="logout-link">ログアウト</a>
                 </span>
             </div>
 

@@ -49,7 +49,7 @@ public class LoginServlet extends HttpServlet {
             } else {
                 request.setAttribute("errorMessage", "アカウントがロックされています。しばらく経ってから再度お試しください。");
                 request.setAttribute("loginLocked", true); // JSP側で入力フィールドを無効化するために再度セット
-                request.getRequestDispatcher("/login/login.jsp").forward(request, response);
+                request.getRequestDispatcher("/scoremanager/main/login.jsp").forward(request, response);
                 return;
             }
         }
@@ -104,7 +104,7 @@ public class LoginServlet extends HttpServlet {
                 } else {
                     // 学校情報がない場合の処理 (エラーにするか、特定の動作をするか)
                     request.setAttribute("errorMessage", "教員に学校情報が紐付いていません。");
-                    request.getRequestDispatcher("/login/login.jsp").forward(request, response);
+                    request.getRequestDispatcher("/scoremanager/main/login.jsp").forward(request, response);
                     return;
                 }
 
@@ -114,7 +114,7 @@ public class LoginServlet extends HttpServlet {
 
                 // menu.jsp ではなく、TestList.action にリダイレクトして成績参照画面に遷移する例
                 // response.sendRedirect(request.getContextPath() + "/login/menu.jsp");
-                response.sendRedirect(request.getContextPath() + "/login/menu.jsp");
+                response.sendRedirect(request.getContextPath() + "/scoremanager/main/menu.jsp");
 
             } else {
                 // 認証失敗
@@ -135,15 +135,15 @@ public class LoginServlet extends HttpServlet {
         } catch (NamingException e) {
             e.printStackTrace();
             request.setAttribute("errorMessage", "データベース接続設定が見つかりません (JNDI名: jdbc/yajima)。");
-            request.getRequestDispatcher("/login/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/scoremanager/main/login.jsp").forward(request, response);
         } catch (SQLException e) {
             e.printStackTrace();
             request.setAttribute("errorMessage", "データベースエラーが発生しました。");
-            request.getRequestDispatcher("/login/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/scoremanager/main/login.jsp").forward(request, response);
         } catch (Exception e) { // SchoolDao.get() などで発生しうる一般的な例外もキャッチ
             e.printStackTrace();
             request.setAttribute("errorMessage", "処理中に予期せぬエラーが発生しました。");
-            request.getRequestDispatcher("/login/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/scoremanager/main/login.jsp").forward(request, response);
         }
         finally {
             if (rs != null) { try { rs.close(); } catch (SQLException e) { e.printStackTrace(); } }
@@ -156,6 +156,6 @@ public class LoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // GETリクエストで /login にアクセスされた場合は、ログインページを表示
-        request.getRequestDispatcher("/login/login.jsp").forward(request, response);
+        request.getRequestDispatcher("/scoremanager/main/login.jsp").forward(request, response);
     }
 }

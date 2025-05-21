@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context reloadable="true">
+
+    <Resource name="jdbc/yajima"
+              auth="Container"
+              type="org.apache.tomcat.jdbc.pool.DataSource"  factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" driverClassName="org.h2.Driver"
+              username="sa"
+              password=""
+              
+              initialSize="5"
+              maxTotal="20"
+              maxIdle="10"
+              minIdle="5"
+              maxWaitMillis="10000"
+              validationQuery="SELECT 1"
+              testOnBorrow="true"
+              testWhileIdle="true"
+              timeBetweenEvictionRunsMillis="30000"
+              minEvictableIdleTimeMillis="60000"
+              removeAbandonedOnBorrow="true"
+              removeAbandonedTimeout="60"
+              logAbandoned="true"
+              url="jdbc:h2:tcp://localhost/~/exam"/>
+
+</Context>

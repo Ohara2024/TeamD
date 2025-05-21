@@ -1,4 +1,4 @@
-package scoremanager.main;
+package scoremanager.main; // パッケージが scoremanager.main に変更されています
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,32 +52,28 @@ public class TestListAction extends HttpServlet {
                 if (loginSchool == null) {
                     errorMessage = "デフォルトの学校情報がシステムに設定されていません。";
                     request.setAttribute("errorMessage", errorMessage);
-                    // prepareDropdownData を try-catch で囲む
                     try {
                         prepareDropdownData(request, loginSchool, studentDao, classNumDao, subjectDao);
                     } catch (Exception innerEx) {
                         innerEx.printStackTrace();
                         if (errorMessage == null) errorMessage = "プルダウンデータの準備中にエラーが発生しました。";
-                        request.setAttribute("errorMessage", errorMessage); // エラーメッセージを更新または設定
+                        request.setAttribute("errorMessage", errorMessage);
                     }
-                    request.getRequestDispatcher("/seiseki/test_list.jsp").forward(request, response);
+                    request.getRequestDispatcher("/scoremanager/main/test_list.jsp").forward(request, response); // ★パス変更
                     return;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 errorMessage = "学校情報の取得中にエラーが発生しました。";
                 request.setAttribute("errorMessage", errorMessage);
-                // prepareDropdownData を try-catch で囲む
                 try {
-                    // loginSchool がこの時点で null の可能性があるため、prepareDropdownData がそれを処理できるか確認
                     prepareDropdownData(request, loginSchool, studentDao, classNumDao, subjectDao);
                 } catch (Exception innerEx) {
                     innerEx.printStackTrace();
-                    // エラーメッセージは既に設定されているか、ここで上書き
                     errorMessage = "学校情報取得エラー後、プルダウンデータの準備中にもエラーが発生しました。";
                     request.setAttribute("errorMessage", errorMessage);
                 }
-                request.getRequestDispatcher("/seiseki/test_list.jsp").forward(request, response);
+                request.getRequestDispatcher("/scoremanager/main/test_list.jsp").forward(request, response); // ★パス変更
                 return;
             }
         }
@@ -92,7 +88,6 @@ public class TestListAction extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             if (errorMessage == null) errorMessage = "プルダウンデータの取得中にエラーが発生しました。";
-            // このエラーが致命的なら、ここでフォワードしてreturnも検討
         }
 
         request.setAttribute("fEntYear", entYearStr);
@@ -149,18 +144,16 @@ public class TestListAction extends HttpServlet {
 
         request.setAttribute("searchMode", searchMode);
         request.setAttribute("errorMessage", errorMessage);
-        request.getRequestDispatcher("/seiseki/test_list_student.jsp").forward(request, response);
+        request.getRequestDispatcher("/scoremanager/main/test_list_student.jsp").forward(request, response); // ★パス変更
     }
 
     private void prepareDropdownData(HttpServletRequest request, School loginSchool,
-                                     StudentDao studentDao, ClassNumDao classNumDao, SubjectDao subjectDao) throws Exception { // このメソッドは Exception をスローする
+                                     StudentDao studentDao, ClassNumDao classNumDao, SubjectDao subjectDao) throws Exception {
         if (loginSchool == null || studentDao == null || classNumDao == null || subjectDao == null) {
              request.setAttribute("entYearSet", new ArrayList<Integer>());
              request.setAttribute("classNumSet", new ArrayList<String>());
              request.setAttribute("subjects", new ArrayList<Subject>());
             System.err.println("prepareDropdownData: loginSchool or one of the DAOs is null. loginSchool=" + loginSchool);
-            // loginSchool が null の場合に Exception をスローして、呼び出し元でエラー処理させることもできる
-            // throw new ServletException("prepareDropdownData: Required objects are null.");
             return;
         }
         List<Student> studentListForYears = studentDao.filter(loginSchool, false);
@@ -218,7 +211,7 @@ public class TestListAction extends HttpServlet {
         request.setAttribute("infoMessage", infoMessage);
         request.setAttribute("searchMode", null);
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/seiseki/test_list.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/scoremanager/main/test_list.jsp"); // ★パス変更
         dispatcher.forward(request, response);
     }
 }

@@ -43,7 +43,7 @@
     <script>
         // 3秒後にログイン画面へ自動的にリダイレクト
         setTimeout(function() {
-            window.location.href = "<%= request.getContextPath() %>/login/login.jsp?logout=true";
+            window.location.href = "<%= request.getContextPath() %>/scoremanager/main/login.jsp?logout=true";
         }, 3000);
     </script>
 </head>

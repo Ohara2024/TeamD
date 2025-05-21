@@ -51,11 +51,10 @@
         <div class="menu-bar">
             <h3>メニュー</h3>
             <ul>
-                <li><a href="#">学生管理</a></li>
-                <li><a href="test_regist.jsp">成績登録</a></li>
+                <li><a href="${pageContext.request.contextPath}/main/StudentList.action" class="active">学生管理</a></li>
+                <li><a href="${pageContext.request.contextPath}/main/TestRegist.action" class="active">成績登録</a></li>
                 <li><a href="${pageContext.request.contextPath}/main/TestList.action" class="active">成績参照</a></li>
-                <li><a href="#">成績照会</a></li>
-                <li><a href="#">科目管理</a></li>
+                <li><a href="${pageContext.request.contextPath}/main/SubjectList.action" class="active">科目管理</a></li>
             </ul>
         </div>
         <div class="content-area">
@@ -64,7 +63,7 @@
                  <span class="user-info">
                     <c:if test="${not empty sessionScope.teacher}">${sessionScope.teacher.name}さん</c:if>
                     <c:if test="${empty sessionScope.teacher}">ゲストさん</c:if>
-                    <a href="#">ログアウト</a>
+                    <a href="<%= request.getContextPath() %>/login/logout" class="logout-link">ログアウト</a>
                 </span>
             </div>
 

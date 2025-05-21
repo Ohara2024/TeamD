@@ -68,7 +68,7 @@
         }
     %>
     <div class="user-info"><%= teacherName %> さん</div>
-    <a href="<%= request.getContextPath() %>/logout.jsp" class="logout-link">ログアウト</a>
+    <a href="<%= request.getContextPath() %>/login/logout" class="logout-link">ログアウト</a>
 </header>
 
     <h1>メニュー</h1>

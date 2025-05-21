@@ -69,7 +69,7 @@ public class SubjectList extends HttpServlet {
             out.println("<div class=\"content\">");
             out.println("<div class=\"form-header\">科目管理</div>");
             out.println("<div class=\"button-container\">");
-            out.println("<p style=\"text-align: right;\"><a href=\"subject/touroku.jsp\" class=\"button\">新規登録</a></p>");
+            out.println("<p style=\"text-align: right;\"><a href=\"scoremanager/subject_create.jsp\" class=\"button\">新規登録</a></p>");
             out.println("</div>");
 
             // DBからデータを取得

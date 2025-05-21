@@ -129,7 +129,7 @@ public class LoginServlet extends HttpServlet {
                     request.setAttribute("loginLocked", true); // JSP表示用
                     request.setAttribute("errorMessage", "入力可能回数が上限に達しました。アカウントをロックしました。");
                 }
-                request.getRequestDispatcher("/login/login.jsp").forward(request, response);
+                request.getRequestDispatcher("/main/login.jsp").forward(request, response);
             }
 
         } catch (NamingException e) {

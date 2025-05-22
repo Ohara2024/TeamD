@@ -174,7 +174,7 @@
             %>
 
             <div class="button-group">
-                <a href="<%= request.getContextPath() %>/SubjectListAction" class="back-to-list-button">科目一覧に戻る</a>
+                <a href="<%= request.getContextPath() %>/main/SubjectListAction" class="back-to-list-button">科目一覧に戻る</a>
             </div>
         </div>
     </div>

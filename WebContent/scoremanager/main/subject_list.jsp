@@ -227,7 +227,7 @@
         <div class="left-panel">
             <h2>科目管理</h2>
             <ul>
-                <li><a href="<%= request.getContextPath() %>/SubjectListAction" class="active">科目管理</a></li>
+                <li><a href="<%= request.getContextPath() %>/main/SubjectListAction" class="active">科目管理</a></li>
                 <li><a href="<%= request.getContextPath() %>/main/StudentList.action">学生管理</a></li>
                 <li><a href="<%= request.getContextPath() %>/main/TestList.action">成績参照</a></li>
             </ul>
@@ -252,7 +252,7 @@
             <h2>科目情報一覧</h2>
 
             <div class="register-link-container">
-                <a href="<%= request.getContextPath() %>/SubjectCreateAction" class="register-text-link">新規登録</a>
+                <a href="<%= request.getContextPath() %>/scoremanager/main/subject_create.jsp">続けて登録・変更する</a>
             </div>
 
             <table>

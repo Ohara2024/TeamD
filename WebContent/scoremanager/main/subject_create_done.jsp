@@ -15,6 +15,7 @@
 <body>
     <h1>登録が完了しました。</h1>
     <p>新しい科目の登録が完了しました。</p>
-    <p><a href="scoremanager/main/subject.jsp">続けて登録する</a> | <a href="<%= request.getContextPath() %>/itiran/hyoji.jsp">科目一覧に戻る</a></p>
+    <p><a href="<%= request.getContextPath() %>/scoremanager/main/subject_create.jsp">続けて登録する</a>
+     | <a href="<%= request.getContextPath() %>/itiran/hyoji.jsp">科目一覧に戻る</a></p>
 </body>
 </html>

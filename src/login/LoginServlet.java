@@ -1,5 +1,4 @@
-// src/login/LoginServlet.java
-package login;
+package login; // パッケージ名はあなたのプロジェクトに合わせてください (例: scoremanager.main または login)
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -46,9 +45,11 @@ public class LoginServlet extends HttpServlet {
                 session.removeAttribute("lockTime");
                 session.removeAttribute("remainingAttempts"); // ロック解除時に試行回数もリセット
                 request.setAttribute("infoMessage", "アカウントのロックが解除されました。"); // エラーではなく情報メッセージ
+                System.out.println("DEBUG: Account unlocked for ID: " + teacherId); // デバッグログ
             } else {
                 request.setAttribute("errorMessage", "アカウントがロックされています。しばらく経ってから再度お試しください。");
                 request.setAttribute("loginLocked", true); // JSP側で入力フィールドを無効化するために再度セット
+                System.out.println("DEBUG: Login attempt for locked account ID: " + teacherId); // デバッグログ
                 request.getRequestDispatcher("/scoremanager/login.jsp").forward(request, response);
                 return;
             }
@@ -59,14 +60,6 @@ public class LoginServlet extends HttpServlet {
             remainingAttempts = MAX_ATTEMPTS; // 初回は最大回数
         }
 
-        // JNDI名やDB接続部分は既存のDaoクラス (例: TeacherDao) を利用する方が良いですが、
-        // 提供されたLoginServletの構造を尊重し、直接接続する形で修正します。
-        // ただし、TestListAction で使用している Dao.java の getConnection() を利用する方が一貫性があります。
-        // ここでは、JNDI名を jdbc/yajima に変更する修正を適用します。
-
-        // TeacherDao を利用してログイン処理を行うのが推奨
-        // この修正では、提供された LoginServlet の直接的なSQL実行の構造は維持しつつ、
-        // JNDI名とセッション格納オブジェクトを TestListAction と連携できるように修正します。
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -98,12 +91,17 @@ public class LoginServlet extends HttpServlet {
                     teacher.setSchool(school); // TeacherオブジェクトにSchoolオブジェクトをセット
                 }
 
-                session.setAttribute("teacher", teacher); // Teacherオブジェクトをセッションに
+                // ★ここを修正: キー名を "loginTeacher" に変更しました★
+                session.setAttribute("loginTeacher", teacher); // Teacherオブジェクトをセッションに
+                System.out.println("DEBUG: Login successful for ID: " + teacherId + ", Name: " + teacher.getName()); // デバッグログ
+
                 if (teacher.getSchool() != null) {
                     session.setAttribute("loginSchool", teacher.getSchool()); // Schoolオブジェクトをセッションに
+                    System.out.println("DEBUG: School associated: " + teacher.getSchool().getName()); // デバッグログ
                 } else {
                     // 学校情報がない場合の処理 (エラーにするか、特定の動作をするか)
                     request.setAttribute("errorMessage", "教員に学校情報が紐付いていません。");
+                    System.err.println("ERROR: Teacher with ID " + teacherId + " has no associated school."); // エラーログ
                     request.getRequestDispatcher("/scoremanager/login.jsp").forward(request, response);
                     return;
                 }
@@ -112,36 +110,39 @@ public class LoginServlet extends HttpServlet {
                 session.removeAttribute("loginLocked");
                 session.removeAttribute("lockTime");
 
-                // menu.jsp ではなく、TestList.action にリダイレクトして成績参照画面に遷移する例
-                // response.sendRedirect(request.getContextPath() + "/login/menu.jsp");
-                response.sendRedirect(request.getContextPath() + "/scoremanager/main/menu.jsp");
-
+                // ログイン後のリダイレクト先
+                response.sendRedirect(request.getContextPath() + "/scoremanager/main/menu.jsp"); // または StudentListActionなど
             } else {
                 // 認証失敗
                 remainingAttempts--;
                 session.setAttribute("remainingAttempts", remainingAttempts);
                 request.setAttribute("remainingAttempts", remainingAttempts); // JSP表示用
                 request.setAttribute("errorMessage", "ユーザー名またはパスワードが間違っています。");
+                System.out.println("DEBUG: Login failed for ID: " + teacherId + ". Remaining attempts: " + remainingAttempts); // デバッグログ
 
                 if (remainingAttempts <= 0) {
                     session.setAttribute("loginLocked", true);
                     session.setAttribute("lockTime", System.currentTimeMillis());
                     request.setAttribute("loginLocked", true); // JSP表示用
                     request.setAttribute("errorMessage", "入力可能回数が上限に達しました。アカウントをロックしました。");
+                    System.out.println("DEBUG: Account locked for ID: " + teacherId); // デバッグログ
                 }
                 request.getRequestDispatcher("/scoremanager/login.jsp").forward(request, response);
             }
 
         } catch (NamingException e) {
             e.printStackTrace();
+            System.err.println("ERROR: NamingException occurred: " + e.getMessage()); // エラーログ
             request.setAttribute("errorMessage", "データベース接続設定が見つかりません (JNDI名: jdbc/yajima)。");
             request.getRequestDispatcher("/scoremanager/login.jsp").forward(request, response);
         } catch (SQLException e) {
             e.printStackTrace();
+            System.err.println("ERROR: SQLException occurred: " + e.getMessage()); // エラーログ
             request.setAttribute("errorMessage", "データベースエラーが発生しました。");
             request.getRequestDispatcher("/scoremanager/login.jsp").forward(request, response);
         } catch (Exception e) { // SchoolDao.get() などで発生しうる一般的な例外もキャッチ
             e.printStackTrace();
+            System.err.println("ERROR: Unexpected Exception occurred: " + e.getMessage()); // エラーログ
             request.setAttribute("errorMessage", "処理中に予期せぬエラーが発生しました。");
             request.getRequestDispatcher("/scoremanager/login.jsp").forward(request, response);
         }
@@ -152,7 +153,7 @@ public class LoginServlet extends HttpServlet {
         }
     }
 
-     @Override
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // GETリクエストで /login にアクセスされた場合は、ログインページを表示

@@ -1,44 +1,41 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="bean.Student" %>
 <%@ page import="bean.School" %>
+<%@ page import="bean.Teacher" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Arrays" %>
 <%
-    // サーブレットから渡される学生情報Bean
+    // セッションからログインユーザー情報を取得
+    // ★ここを修正: キー名を "teacher" に変更★
+    Teacher loginTeacher = (Teacher) session.getAttribute("teacher");
+    String teacherName = "ゲスト"; // デフォルト値または未ログイン時の表示名
+
+    if (loginTeacher != null) {
+        teacherName = loginTeacher.getName(); // Teacherオブジェクトから名前を取得
+    }
+
+    // サーブレットから渡された属性値を取得
     Student student = (Student) request.getAttribute("student");
-    // nullチェック: もしサーブレットからstudentが渡されなかった場合やエラーの場合に備える
-    if (student == null) {
-        student = new Student(); // NullPointerExceptionを避けるため空のインスタンスを作成
-        // デフォルト値やエラーメッセージを設定することも検討
-    }
-
-    // サーブレットから渡される入学年度のリスト
+    String error = (String) request.getAttribute("error");
     List<Integer> entYears = (List<Integer>) request.getAttribute("entYears");
-    if (entYears == null) {
-        // デバッグ用または未設定時のダミーデータ
-        int currentYear = java.time.Year.now().getValue();
-        entYears = new ArrayList<>();
-        for (int i = currentYear - 10; i <= currentYear + 5; i++) {
-            entYears.add(i);
-        }
-    }
-
-    // サーブレットから渡されるクラスのリスト
     List<String> classNums = (List<String>) request.getAttribute("classNums");
-    if (classNums == null) {
-        // デバッグ用または未設定時のダミーデータ
-        classNums = Arrays.asList("101", "102", "201", "202", "301", "302");
+
+    // JSPでの表示用に、在籍フラグを数値に変換（例: チェックボックスのselected判定用）
+    String isAttendChecked = "";
+    if (student != null && student.isAttend()) {
+        isAttendChecked = "checked";
     }
 
-    // サーブレットから渡される学校のリスト（もし必要なら）
-    List<School> schools = (List<School>) request.getAttribute("schools");
+    // ドロップダウンリストの現在の選択値を取得
+    Integer selectedEntYear = (student != null) ? student.getEntYear() : null;
+    String selectedClassNum = (student != null) ? student.getClassNum() : "";
 %>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>学生情報変更</title>
+    <title>学生変更</title>
     <style>
         /* 共通のCSSスタイル */
         body { font-family: Arial, sans-serif; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
@@ -59,53 +56,36 @@
         .content { flex-grow: 1; padding: 30px; background-color: #fff; }
         .form-header { background-color: #f0f0f0; padding: 10px; font-size: 18px; font-weight: bold; margin-bottom: 20px; border-left: 5px solid #333; color: #333; }
 
-        /* フォーム固有のスタイル */
-        .form-area { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; margin-bottom: 20px; border-radius: 5px;}
+        /* フォームのスタイル */
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         .form-group input[type="text"],
-        .form-group input[type="number"],
-        .form-group select {
-            width: calc(100% - 22px);
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        .form-group input[type="checkbox"] {
-            margin-right: 5px;
-            transform: scale(1.2);
-            vertical-align: middle;
-        }
-        .form-group button {
+        .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .form-group input[type="checkbox"] { margin-right: 5px; }
+
+        .button-group { margin-top: 20px; text-align: center; }
+        .button-group input[type="submit"],
+        .button-group .back-button {
             padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.2s ease;
+            text-decoration: none; /* aタグの場合 */
+            display: inline-block; /* aタグの場合 */
+            margin: 0 5px;
         }
-        .form-group button[type="submit"] {
-            background-color: #007bff;
-            color: white;
-            margin-right: 10px;
+        .button-group input[type="submit"] { background-color: #007bff; color: white; }
+        .button-group input[type="submit"]:hover { background-color: #0056b3; }
+        .button-group .back-button { background-color: #6c757d; color: white; }
+        .button-group .back-button:hover { background-color: #5a6268; }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
         }
-        .form-group button[type="submit"]:hover {
-            background-color: #0056b3;
-        }
-        .back-button {
-            background-color: #6c757d;
-            color: white;
-        }
-        .back-button:hover {
-            background-color: #5a6268;
-        }
-        .readonly-field {
-            background-color: #e9ecef; /* 読み取り専用フィールドの背景色 */
-            opacity: 1; /* iOSでの透明度リセット */
-        }
-        .logout-link { /* 必要に応じてログアウトリンク独自のスタイルをここに追加 */ }
 
         .footer { text-align: center; font-size: 12px; color: #555; padding: 20px; border-top: 1px solid #ccc; background-color: #f0f0f0; width: 100%; }
     </style>
@@ -114,7 +94,7 @@
     <header>
         <h1>得点管理システム</h1>
         <div class="header-info">
-            <span>テスト様</span>
+            <span><%= teacherName %>様</span>
             <a href="<%= request.getContextPath() %>/login/logout" class="logout-link">ログアウト</a>
         </div>
     </header>
@@ -133,71 +113,51 @@
 
         <div class="content">
             <div class="form-header">
-                <h2>学生情報変更</h2>
+                <h2>学生変更</h2>
             </div>
 
-            <div class="form-area">
-                <form action="<%= request.getContextPath() %>/StudentUpdateExecuteAction" method="post">
-                    <%-- hiddenフィールドで学生番号と学校コードを送信 --%>
-                    <input type="hidden" name="no" value="<%= (student.getNo() != null) ? student.getNo() : "" %>">
-                    <%-- schoolCdのアクセス方法を修正 --%>
-                    <input type="hidden" name="schoolCd" value="<%= (student.getSchool() != null) ? student.getSchool().getCd() : "" %>">
+            <% if (error != null) { %>
+                <div class="error-message">
+                    <%= error %>
+                </div>
+            <% } %>
 
-                    <div class="form-group">
-                        <label for="entYear">入学年度:</label>
-                        <%-- 入学年度は読み取り専用とする --%>
-                        <input type="text" id="entYear" name="entYear"
-                            value="<%= (student.getEntYear() != 0) ? student.getEntYear() : "" %>"
-                            readonly class="readonly-field">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="displayNo">学生番号:</label>
-                        <%-- 学生番号は読み取り専用とする --%>
-                        <input type="text" id="displayNo" name="displayNo"
-                            value="<%= (student.getNo() != null) ? student.getNo() : "" %>"
-                            readonly class="readonly-field">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="name">氏名:</label>
-                        <input type="text" id="name" name="name"
-                            value="<%= (student.getName() != null) ? student.getName() : "" %>"
-                            placeholder="氏名を入力してください" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="classNum">クラス:</label>
-                        <select id="classNum" name="classNum">
-                            <%-- ドロップダウンの初期値を設定 --%>
-                            <option value="">------</option>
-                            <%
-                                if (classNums != null) {
-                                    for (String cNum : classNums) {
-                                        String selected = "";
-                                        if (student.getClassNum() != null && student.getClassNum().equals(cNum)) {
-                                            selected = " selected";
-                                        }
-                                        out.println("<option value=\"" + cNum + "\"" + selected + ">" + cNum + "組</option>");
-                                    }
-                                }
-                            %>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="attend">在籍:</label>
-                        <%-- 在籍チェックボックスの初期値を設定 --%>
-                        <input type="checkbox" id="attend" name="attend" value="true"
-                            <%= student.isAttend() ? "checked" : "" %>>
-                    </div>
-
-                    <div class="form-group">
-                        <button type="submit">変更</button>
-                        <button type="button" class="back-button" onclick="location.href='<%= request.getContextPath() %>/StudentListAction'">戻る</button>
-                    </div>
-                </form>
-            </div>
+            <form action="<%= request.getContextPath() %>/StudentUpdateExecuteAction" method="post">
+                <div class="form-group">
+                    <label for="no">学生番号</label>
+                    <input type="text" id="no" name="no" value="<%= student != null ? student.getNo() : "" %>" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="name">氏名</label>
+                    <input type="text" id="name" name="name" value="<%= student != null ? student.getName() : "" %>" required>
+                </div>
+                <div class="form-group">
+                    <label for="entYear">入学年度</label>
+                    <input type="text" id="entYear" name="entYear" value="<%= student != null ? student.getEntYear() : "" %>" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="classNum">クラス</label>
+                    <select id="classNum" name="classNum" required>
+                        <option value="">-- 選択してください --</option>
+                        <% if (classNums != null) { %>
+                            <% for (String cn : classNums) { %>
+                                <option value="<%= cn %>" <%= cn.equals(selectedClassNum) ? "selected" : "" %>>
+                                    <%= cn %>
+                                </option>
+                            <% } %>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="attend" value="true" <%= isAttendChecked %>> 在学中
+                    </label>
+                </div>
+                <div class="button-group">
+                    <input type="submit" value="変更">
+                    <a href="<%= request.getContextPath() %>/StudentListAction" class="back-button">戻る</a>
+                </div>
+            </form>
         </div>
     </div>
 

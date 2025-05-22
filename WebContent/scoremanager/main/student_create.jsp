@@ -1,8 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%-- 必要に応じてbeanをインポート --%>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.time.Year" %>
+<%@ page import="bean.Teacher" %> <%-- ★追加: Teacher Beanをインポート★ --%>
 <%
     // サーブレットから渡される入学年度のリスト (StudentCreateActionでセットされることを想定)
     List<Integer> entYears = (List<Integer>) request.getAttribute("entYears");
@@ -23,6 +23,15 @@
 
     // エラーメッセージがあれば取得
     String errorMessage = (String) request.getAttribute("error");
+
+    // ★追加: セッションからログインユーザー情報を取得★
+    // LoginServletで "teacher" というキー名で保存されている前提
+    Teacher loginTeacher = (Teacher) session.getAttribute("teacher");
+    String teacherName = "ゲスト"; // デフォルト値または未ログイン時の表示名
+
+    if (loginTeacher != null && loginTeacher.getName() != null && !loginTeacher.getName().isEmpty()) {
+        teacherName = loginTeacher.getName(); // Teacherオブジェクトから名前を取得
+    }
 %>
 <!DOCTYPE html>
 <html lang="ja">
@@ -105,7 +114,7 @@
     <header>
         <h1>得点管理システム</h1>
         <div class="header-info">
-            <span>テスト様</span>
+            <span><%= teacherName %>様</span> <%-- ★ここを修正: teacherName変数を使用★ --%>
             <a href="<%= request.getContextPath() %>/login/logout" class="logout-link">ログアウト</a>
         </div>
     </header>

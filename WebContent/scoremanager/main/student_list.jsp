@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="bean.Student" %>
+<%@ page import="bean.Teacher" %> <%-- ★追加: Teacher Beanをインポート★ --%>
 <%
     // リクエストスコープから属性を取得
     List<Student> studentList = (List<Student>) request.getAttribute("studentList");
@@ -11,6 +12,15 @@
     String selectedEntYear = (String) request.getAttribute("entYear");
     String selectedClassNum = (String) request.getAttribute("classNumParam"); // StudentListActionの属性名と合わせる
     String selectedAttend = (String) request.getAttribute("attend");
+
+    // ★追加: セッションからログインユーザー情報を取得★
+    // LoginServletで "teacher" というキー名で保存されている前提
+    Teacher loginTeacher = (Teacher) session.getAttribute("teacher");
+    String teacherName = "ゲスト"; // デフォルト値または未ログイン時の表示名
+
+    if (loginTeacher != null && loginTeacher.getName() != null && !loginTeacher.getName().isEmpty()) {
+        teacherName = loginTeacher.getName(); // Teacherオブジェクトから名前を取得
+    }
 %>
 <!DOCTYPE html>
 <html lang="ja">
@@ -25,7 +35,8 @@
     .header-info span { margin-right: 15px; }
     .header-info a { text-decoration: none; color: #007bff; }
     .container { display: flex; }
-    .content { flex-grow: 1; padding: 30px; }
+    /* サイドバーがないJSPなので、コンテンツ幅を広げるために修正 */
+    .content { flex-grow: 1; padding: 30px; margin-left: auto; margin-right: auto; max-width: 1200px; } /* センター寄せと最大幅の追加 */
     .form-header { background-color: #f0f0f0; padding: 10px; font-size: 18px; font-weight: bold; margin-bottom: 20px; border-left: 5px solid #333; display: flex; justify-content: space-between; align-items: center; }
     .form-header h2 { margin: 0; }
     .filter-form { background-color: #f9f9f9; padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; }
@@ -51,7 +62,6 @@
         background-color: transparent;
         color: #007bff;
         border: none;
-        /* margin-right: 5px;  // 削除ボタンがないので不要になるが、好みで残しても良い */
     }
     .edit-button:hover { text-decoration: underline; background-color: transparent; }
     .register-button { color: #007bff; text-decoration: none; }
@@ -62,7 +72,7 @@
 <header>
     <h1>得点管理システム</h1>
     <div class="header-info">
-        <span>テスト様</span>
+        <span><%= teacherName %>様</span> <%-- ★ここを修正: teacherName変数を使用★ --%>
         <a href="<%= request.getContextPath() %>/login/logout" class="logout-link">ログアウト</a>
     </div>
 </header>

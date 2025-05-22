@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="bean.Teacher" %>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -57,7 +58,18 @@
     <header>
         <h1>得点管理システム</h1>
         <div class="header-info">
-            <span>テスト様</span>
+            <%
+                // セッションからTeacherオブジェクトを取得
+                // LoginServletで "teacher" というキー名で保存されている前提
+                Teacher teacher = (Teacher) session.getAttribute("teacher"); // ★ここを修正: キー名を "teacher" に変更★
+                String teacherName = "ゲスト"; // デフォルトの名前
+
+                // teacherオブジェクトが存在し、名前がnullでなく空文字列でない場合に名前を設定
+                if (teacher != null && teacher.getName() != null && !teacher.getName().isEmpty()) {
+                    teacherName = teacher.getName();
+                }
+            %>
+            <span><%= teacherName %> さん</span>
             <a href="<%= request.getContextPath() %>/login/logout" class="logout-link">ログアウト</a>
         </div>
     </header>

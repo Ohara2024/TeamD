@@ -1,9 +1,10 @@
-<%@ page language="java" contentType="text/html; charset=UTF-UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="bean.Teacher" %>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>学生変更完了</title>
+    <title>学生登録完了</title>
     <style>
         /* 共通のCSSスタイル */
         body { font-family: Arial, sans-serif; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
@@ -57,7 +58,18 @@
     <header>
         <h1>得点管理システム</h1>
         <div class="header-info">
-            <span>テスト様</span>
+            <%
+                // セッションからTeacherオブジェクトを取得
+                // ★ここを修正: キー名を "teacher" に変更★
+                Teacher teacher = (Teacher) session.getAttribute("teacher");
+                String teacherName = "ゲスト"; // デフォルトの名前
+
+                // teacherオブジェクトが存在し、名前がnullでなく空文字列でない場合に名前を設定
+                if (teacher != null && teacher.getName() != null && !teacher.getName().isEmpty()) {
+                    teacherName = teacher.getName();
+                }
+            %>
+            <span><%= teacherName %> さん</span>
             <a href="<%= request.getContextPath() %>/login/logout" class="logout-link">ログアウト</a>
         </div>
     </header>
@@ -76,10 +88,10 @@
 
         <div class="content">
             <div class="form-header">
-                <h2>学生変更完了</h2>
+                <h2>学生登録完了</h2>
             </div>
             <div class="message-area">
-                <p>学生情報の変更が正常に完了しました。</p>
+                <p>学生情報の登録が正常に完了しました。</p>
                 <a href="<%= request.getContextPath() %>/StudentListAction" class="action-link">学生一覧へ</a>
             </div>
         </div>

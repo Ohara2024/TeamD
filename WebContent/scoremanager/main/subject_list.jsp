@@ -252,7 +252,7 @@
             <h2>科目情報一覧</h2>
 
             <div class="register-link-container">
-                <a href="<%= request.getContextPath() %>/scoremanager/main/subject_create.jsp">続けて登録・変更する</a>
+                <a href="<%= request.getContextPath() %>/scoremanager/main/subject_create.jsp">登録・変更</a>
             </div>
 
             <table>

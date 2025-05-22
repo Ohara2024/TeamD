@@ -24,7 +24,13 @@
     <header>
         <h1>得点管理システム</h1>
         <div>
-            <%= session.getAttribute("username") != null ? session.getAttribute("username") + " さん" : "null さん" %>
+            <%
+                String username = (String) session.getAttribute("username");
+                if (username == null || username.trim().isEmpty()) {
+                    username = "ゲスト";
+                }
+            %>
+            <%= username %> さん
             <a href="<%= request.getContextPath() %>/login/logout.jsp">ログアウト</a>
         </div>
     </header>

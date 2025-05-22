@@ -11,6 +11,10 @@ import bean.School;
 import bean.Subject;
 import bean.TestListSubject;
 
+/**
+ * ファイル名TestListSubjectDao.java
+ */
+
 public class TestListSubjectDao extends Dao {
 
 	/**

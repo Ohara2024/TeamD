@@ -10,6 +10,10 @@ import java.util.List;
 import bean.School;
 import bean.Student;
 
+/**
+ * ファイル名 StudentDao.java
+ */
+
 public class StudentDao extends Dao {
 	/**
 	 * getメソッド 学生番号を指定して学生インスタンスを1件取得する

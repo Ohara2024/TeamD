@@ -54,8 +54,8 @@
 </header>
 <div class="container">
 <div class="menu-left">
-<<a href="<%= request.getContextPath() %>/scoremanager/main/menu.jsp">メニュー</a>
-            <a href="<%= request.getContextPath() %>/main/StudentList.action">学生管理</a>
+<a href="<%= request.getContextPath() %>/scoremanager/main/menu.jsp">メニュー</a>
+            <a href="<%= request.getContextPath() %>/StudentListAction">学生管理</a>
             <h4>成績管理</h4>
             <a href="<%= request.getContextPath() %>/main/TestRegist.action">成績登録</a>
             <a href="<%= request.getContextPath() %>/main/TestList.action">成績参照</a>

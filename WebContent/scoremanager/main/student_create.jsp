@@ -123,11 +123,10 @@
         <div class="sidebar">
             <h2>メニュー</h2>
             <ul>
-                <li><a href="<%= request.getContextPath() %>/StudentListAction">学生管理</a></li>
-                <li><a href="#">成績管理</a></li>
-                <li><a href="#">得点登録</a></li>
-                <li><a href="#">履修登録</a></li>
-                <li><a href="#">科目管理</a></li>
+                <li><a href="${pageContext.request.contextPath}/StudentListAction" class="active">学生管理</a></li>
+                <li><a href="${pageContext.request.contextPath}/main/TestRegist.action" class="active">成績登録</a></li>
+                <li><a href="${pageContext.request.contextPath}/main/TestList.action" class="active">成績参照</a></li>
+                <li><a href="${pageContext.request.contextPath}/main/SubjectListAction" class="active">科目管理</a></li>
             </ul>
         </div>
 

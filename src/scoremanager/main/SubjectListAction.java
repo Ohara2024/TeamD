@@ -16,7 +16,7 @@ import bean.Subject;
 import bean.Teacher;
 import dao.SubjectDao;
 
-@WebServlet(urlPatterns={"/SubjectListAction"})
+@WebServlet(urlPatterns={"/main/SubjectListAction"})
 public class SubjectListAction extends HttpServlet {
 
     @Override

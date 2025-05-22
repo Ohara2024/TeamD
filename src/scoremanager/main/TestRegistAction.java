@@ -1,13 +1,12 @@
 package scoremanager.main;
 
 import java.io.IOException;
+// LocalDateは直接使用しなくなったため、もし他の箇所でも使っていなければ削除可能
+// import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -42,19 +41,30 @@ public class TestRegistAction extends HttpServlet {
         String errorMessage = null;
         String infoMessage = null;
 
-        SchoolDao schoolDao = new SchoolDao();
-        StudentDao studentDao = new StudentDao();
-        ClassNumDao classNumDao = new ClassNumDao();
+        SchoolDao schoolDao = null;
+        StudentDao studentDao = null;
+        ClassNumDao classNumDao = null;
         SubjectDao subjectDao = null;
+
         try {
-            subjectDao = new SubjectDao();
-        } catch (Exception e) {
+            schoolDao = new SchoolDao(); // コンストラクタで RuntimeException がスローされる可能性
+            studentDao = new StudentDao(); // 同上
+            classNumDao = new ClassNumDao(); // 同上
+            subjectDao = new SubjectDao();   // 同上
+        } catch (RuntimeException re) { // DAO初期化時のRuntimeExceptionをキャッチ
+            re.printStackTrace();
+            errorMessage = "データベース接続設定エラー: " + re.getMessage();
+            request.setAttribute("errorMessage", errorMessage);
+            request.getRequestDispatcher("/scoremanager/main/test_regist.jsp").forward(request, response);
+            return;
+        } catch (Exception e) { // その他の予期せぬ初期化エラー
             e.printStackTrace();
-            errorMessage = "データベース関連の初期化に失敗しました。";
+            errorMessage = "システム初期化中に予期せぬエラーが発生しました。";
             request.setAttribute("errorMessage", errorMessage);
             request.getRequestDispatcher("/scoremanager/main/test_regist.jsp").forward(request, response);
             return;
         }
+
 
         if (loginSchool == null) {
             try {
@@ -62,9 +72,9 @@ public class TestRegistAction extends HttpServlet {
                 if (loginSchool == null) {
                     errorMessage = "デフォルトの学校情報（コード: " + DEFAULT_SCHOOL_CD + "）がシステムに設定されていません。";
                 }
-            } catch (Exception e) {
+            } catch (Exception e) { // SchoolDao.get() は RuntimeException をスローする可能性あり
                 e.printStackTrace();
-                errorMessage = "学校情報の取得中にエラーが発生しました。";
+                errorMessage = "学校情報の取得中にエラーが発生しました: " + e.getMessage();
             }
         }
 
@@ -75,9 +85,12 @@ public class TestRegistAction extends HttpServlet {
             if (errorMessage == null) errorMessage = "初期データの取得中にエラーが発生しました：" + e.getMessage();
         }
 
-        if (errorMessage == null) {
+        if (errorMessage == null && loginSchool != null) { // loginSchoolが取得できた場合のみinfoMessageを設定
             infoMessage = "検索条件を指定して検索ボタンを押してください。";
+        } else if (loginSchool == null && errorMessage == null) { // デフォルト校も取得できなかった場合
+             errorMessage = "利用可能な学校情報がありません。システム管理者に連絡してください。";
         }
+
         request.setAttribute("errorMessage", errorMessage);
         request.setAttribute("infoMessage", infoMessage);
 
@@ -97,17 +110,27 @@ public class TestRegistAction extends HttpServlet {
         String infoMessage = null;
         String forwardPath = "/scoremanager/main/test_regist.jsp";
 
-        SchoolDao schoolDao = new SchoolDao();
-        StudentDao studentDao = new StudentDao();
-        ClassNumDao classNumDao = new ClassNumDao();
+        SchoolDao schoolDao = null;
+        StudentDao studentDao = null;
+        ClassNumDao classNumDao = null;
         SubjectDao subjectDao = null;
-        TestDao testDao = new TestDao();
+        TestDao testDao = null; // TestDaoもここで初期化
 
         try {
+            schoolDao = new SchoolDao();
+            studentDao = new StudentDao();
+            classNumDao = new ClassNumDao();
             subjectDao = new SubjectDao();
+            testDao = new TestDao(); // TestDaoも初期化
+        } catch (RuntimeException re) {
+            re.printStackTrace();
+            errorMessage = "データベース接続設定エラー: " + re.getMessage();
+            request.setAttribute("errorMessage", errorMessage);
+            request.getRequestDispatcher(forwardPath).forward(request, response);
+            return;
         } catch (Exception e) {
             e.printStackTrace();
-            errorMessage = "データベース関連の初期化に失敗しました。";
+            errorMessage = "システム初期化中に予期せぬエラーが発生しました。";
             request.setAttribute("errorMessage", errorMessage);
             request.getRequestDispatcher(forwardPath).forward(request, response);
             return;
@@ -121,29 +144,26 @@ public class TestRegistAction extends HttpServlet {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                errorMessage = "学校情報の取得中にエラーが発生しました。";
+                errorMessage = "学校情報の取得中にエラーが発生しました: " + e.getMessage();
             }
             // loginSchool が null の場合でも、エラーメッセージを設定した上でプルダウン準備を試みる
-            // (prepareDropdownData は loginSchool が null の場合をハンドルする)
             try {
                 prepareDropdownData(request, loginSchool, studentDao, classNumDao, subjectDao);
             } catch (Exception prepEx) {
                 prepEx.printStackTrace();
                 if (errorMessage == null) errorMessage = "プルダウンデータの準備中にエラーが発生しました。";
+                else errorMessage += " また、プルダウンデータの準備中にもエラーが発生しました。";
             }
             request.setAttribute("errorMessage", errorMessage);
-            request.getRequestDispatcher(forwardPath).forward(request, response);
+            request.getRequestDispatcher(forwardPath).forward(request, response); // forwardPathを使用
             return;
         }
 
-
-        // loginSchool が null でない場合、またはデフォルト校情報がセットされた場合
         try {
             prepareDropdownData(request, loginSchool, studentDao, classNumDao, subjectDao);
         } catch (Exception e) {
             e.printStackTrace();
             if (errorMessage == null) errorMessage = "プルダウンデータの取得中にエラーが発生しました。";
-            // このエラーが致命的な場合、ここで処理を中断してエラーページにフォワードすることも検討
         }
 
         String fEntYearStr = request.getParameter("fEntYear");
@@ -168,7 +188,10 @@ public class TestRegistAction extends HttpServlet {
                     Subject subject = subjectDao.get(fSubjectCd, loginSchool.getCd());
 
                     if (subject != null) {
-                        List<Student> students = studentDao.filter(loginSchool, entYear, fClassNum, true);
+                        // StudentDao.filterの呼び出し方を新しいシグネチャに合わせる
+                        // (Integer entYear, String classNum, Boolean isAttend, String schoolCd)
+                        // 在学中(isAttend=true)の学生を対象とする
+                        List<Student> students = studentDao.filter(entYear, fClassNum, true, loginSchool.getCd());
                         Map<String, Integer> pointsMap = new HashMap<>();
                         if (students != null && !students.isEmpty()) {
                             for (Student student : students) {
@@ -176,7 +199,7 @@ public class TestRegistAction extends HttpServlet {
                                 if (test != null) {
                                     pointsMap.put(student.getNo(), test.getPoint());
                                 } else {
-                                    pointsMap.put(student.getNo(), null);
+                                    pointsMap.put(student.getNo(), null); // JSP側でvalueがnullの場合の処理が必要な場合がある
                                 }
                             }
                         }
@@ -185,7 +208,7 @@ public class TestRegistAction extends HttpServlet {
                         request.setAttribute("searchedSubject", subject);
                         request.setAttribute("searchedTestNo", testNo);
                         if (students == null || students.isEmpty()) {
-                           infoMessage = "指定された条件に合致する学生情報は見つかりませんでした。";
+                           if (infoMessage == null) infoMessage = "指定された条件に合致する学生情報は見つかりませんでした。";
                         }
                     } else {
                         if (errorMessage == null) errorMessage = "指定された科目が存在しません。";
@@ -194,7 +217,7 @@ public class TestRegistAction extends HttpServlet {
                     if (errorMessage == null) errorMessage = "入学年度または回数が不正な形式です。";
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if (errorMessage == null) errorMessage = "学生または成績情報の検索中にエラーが発生しました。";
+                    if (errorMessage == null) errorMessage = "学生または成績情報の検索中にエラーが発生しました: " + e.getMessage();
                 }
             } else {
                 if (errorMessage == null) errorMessage = "検索条件（入学年度、クラス、科目、回数）をすべて選択してください。";
@@ -211,11 +234,9 @@ public class TestRegistAction extends HttpServlet {
                     List<Test> testsToSave = new ArrayList<>();
                     boolean allPointsValid = true;
 
-                    for (String studentNo : studentNos) {
-                        String pointStr = request.getParameter("point_" + studentNo);
+                    for (String studentNoValue : studentNos) { // 変数名を studentNo から studentNoValue に変更
+                        String pointStr = request.getParameter("point_" + studentNoValue);
                         if (pointStr == null || pointStr.trim().isEmpty()) {
-                            // 点数が未入力の場合は、その学生のその回のデータは処理しない（更新も登録もしない）
-                            // もし「未入力の場合は0点として登録」などの仕様があれば、ここで point = 0 とする
                             continue;
                         }
                         
@@ -223,17 +244,17 @@ public class TestRegistAction extends HttpServlet {
                         try {
                             point = Integer.parseInt(pointStr);
                             if (point < 0 || point > 100) {
-                                errorMessage = "学生番号 " + studentNo + " の点数は0点から100点の範囲で入力してください。";
+                                errorMessage = "学生番号 " + studentNoValue + " の点数は0点から100点の範囲で入力してください。";
                                 allPointsValid = false;
                                 break;
                             }
                         } catch (NumberFormatException e) {
-                            errorMessage = "学生番号 " + studentNo + " の点数が数値ではありません。";
+                            errorMessage = "学生番号 " + studentNoValue + " の点数が数値ではありません。";
                             allPointsValid = false;
                             break;
                         }
 
-                        Student student = studentDao.get(studentNo);
+                        Student student = studentDao.get(studentNoValue, loginSchool.getCd()); // 学校コードも渡す
                         if (student == null || subject == null) {
                             errorMessage = "学生または科目の情報取得に失敗しました（登録処理中）。";
                             allPointsValid = false;
@@ -266,7 +287,7 @@ public class TestRegistAction extends HttpServlet {
                     if (errorMessage == null) errorMessage = "回数または点数が不正な形式です（登録処理中）。";
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if (errorMessage == null) errorMessage = "成績の登録/更新中にエラーが発生しました。";
+                    if (errorMessage == null) errorMessage = "成績の登録/更新中にエラーが発生しました: " + e.getMessage();
                 }
             } else {
                 if (errorMessage == null) errorMessage = "登録に必要な情報（科目、回数、学生）が不足しています。";
@@ -280,38 +301,37 @@ public class TestRegistAction extends HttpServlet {
 
     private void prepareDropdownData(HttpServletRequest request, School loginSchool,
                                      StudentDao studentDao, ClassNumDao classNumDao, SubjectDao subjectDao) throws Exception {
-        if (subjectDao == null) {
+        String schoolCdForFilter = null;
+        if (loginSchool != null && loginSchool.getCd() != null) {
+            schoolCdForFilter = loginSchool.getCd();
+        }
+
+        if (studentDao == null || classNumDao == null || subjectDao == null) {
              request.setAttribute("entYearSet", new ArrayList<Integer>());
              request.setAttribute("classNumSet", new ArrayList<String>());
              request.setAttribute("subjectList", new ArrayList<Subject>());
-            // doGet/doPostで既にSubjectDaoの初期化失敗はハンドルされているはずなので、
-            // ここで再度エラーを出すよりは、呼び出し元で subjectDao が null でないことを保証する方が良いかもしれない。
-            // ただし、万が一のためにログは残す。
-            System.err.println("prepareDropdownData: SubjectDao is null. Cannot prepare dropdown data.");
+            System.err.println("prepareDropdownData: One or more DAOs are null. studentDao=" + studentDao +
+                               ", classNumDao=" + classNumDao + ", subjectDao=" + subjectDao);
             return;
         }
-        if (loginSchool == null || studentDao == null || classNumDao == null ) {
-             request.setAttribute("entYearSet", new ArrayList<Integer>());
-             request.setAttribute("classNumSet", new ArrayList<String>());
-             request.setAttribute("subjectList", new ArrayList<Subject>());
-            System.err.println("prepareDropdownData: loginSchool or other DAOs are null. loginSchool=" + loginSchool);
+        
+        if (schoolCdForFilter == null) {
+            System.err.println("prepareDropdownData: schoolCdForFilter is null. Cannot fetch school-specific dropdown data.");
+            request.setAttribute("entYearSet", new ArrayList<Integer>());
+            request.setAttribute("classNumSet", new ArrayList<String>());
+            request.setAttribute("subjectList", new ArrayList<Subject>());
             return;
         }
 
-        List<Student> studentListForYears = studentDao.filter(loginSchool, false);
-        Set<Integer> distinctYears = new HashSet<>();
-        if (studentListForYears != null) {
-            for (Student s : studentListForYears) {
-                distinctYears.add(s.getEntYear());
-            }
-        }
-        List<Integer> entYearSet = new ArrayList<>(distinctYears);
-        Collections.sort(entYearSet, Collections.reverseOrder());
+        // StudentDao.getAllEntYears(schoolCd) を使用
+        List<Integer> entYearSet = studentDao.getAllEntYears(schoolCdForFilter);
         request.setAttribute("entYearSet", entYearSet);
 
-        List<String> classNumSet = classNumDao.filter(loginSchool);
+        // ClassNumDao.filter(schoolCd) を使用 (studentテーブルから取得するロジックに変更されたことを反映)
+        List<String> classNumSet = classNumDao.filter(schoolCdForFilter);
         request.setAttribute("classNumSet", classNumSet);
 
+        // SubjectDao.filter(school) は School オブジェクトを引数に取る (提供された新しいSubjectDaoでは変更なし)
         List<Subject> subjectList = subjectDao.filter(loginSchool);
         request.setAttribute("subjectList", subjectList);
     }

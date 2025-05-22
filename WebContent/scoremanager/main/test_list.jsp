@@ -186,7 +186,7 @@
         <div class="menu-bar">
             <h3>メニュー</h3>
             <ul>
-                <li><a href="${pageContext.request.contextPath}/main/StudentList.action" class="active">学生管理</a></li>
+                <li><a href="${pageContext.request.contextPath}/StudentListAction" class="active">学生管理</a></li>
                 <li><a href="${pageContext.request.contextPath}/main/TestRegist.action" class="active">成績登録</a></li>
                 <li><a href="${pageContext.request.contextPath}/main/TestList.action" class="active">成績参照</a></li>
                 <li><a href="${pageContext.request.contextPath}/main/SubjectListAction" class="active">科目管理</a></li>

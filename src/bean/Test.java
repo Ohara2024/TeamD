@@ -2,6 +2,10 @@ package bean;
 
 import java.io.Serializable;
 
+/**
+ * ファイル名 Test.java
+ */
+
 public class Test implements Serializable {
 	/**
 	 * 学生:Student

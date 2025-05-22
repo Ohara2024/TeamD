@@ -228,7 +228,7 @@
             <h2>科目管理</h2>
             <ul>
                 <li><a href="<%= request.getContextPath() %>/main/SubjectListAction" class="active">科目管理</a></li>
-                <li><a href="<%= request.getContextPath() %>/main/StudentList.action">学生管理</a></li>
+                <li><a href="<%= request.getContextPath() %>/StudentListAction">学生管理</a></li>
                 <li><a href="<%= request.getContextPath() %>/main/TestList.action">成績参照</a></li>
             </ul>
         </div>

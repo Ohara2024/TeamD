@@ -98,7 +98,8 @@ public class LoginServlet extends HttpServlet {
                     teacher.setSchool(school); // TeacherオブジェクトにSchoolオブジェクトをセット
                 }
 
-                session.setAttribute("teacher", teacher); // Teacherオブジェクトをセッションに
+                session.setAttribute("teacher", teacher);
+                session.setAttribute("username", teacher.getName());// Teacherオブジェクトをセッションに
                 if (teacher.getSchool() != null) {
                     session.setAttribute("loginSchool", teacher.getSchool()); // Schoolオブジェクトをセッションに
                 } else {

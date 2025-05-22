@@ -72,7 +72,7 @@
 </header>
 
     <h1>メニュー</h1>
-    <a href="<%= request.getContextPath() %>/main/StudentList.action" class="menu-item">学生管理</a>  <%-- ★パス変更 --%>
+    <a href="<%= request.getContextPath() %>/StudentListAction" class="menu-item">学生管理</a>  <%-- ★パス変更 --%>
     <a href="<%= request.getContextPath() %>/main/TestList.action" class="menu-item">成績参照</a>
     <a href="<%= request.getContextPath() %>/main/SubjectListAction" class="menu-item">科目管理</a> <%-- ★パス変更 --%>
 

@@ -1,6 +1,11 @@
+
 package bean;
 
 import java.io.Serializable;
+
+/**
+ * ファイル名 ClassNum
+ */
 
 public class ClassNum implements Serializable {
 	/**

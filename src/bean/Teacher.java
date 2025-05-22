@@ -2,6 +2,10 @@ package bean;
 
 import java.io.Serializable;
 
+/**
+ * ファイル名 Teacher.java
+ */
+
 public class Teacher extends User implements Serializable {
 	/**
 	 * 教員ID:String

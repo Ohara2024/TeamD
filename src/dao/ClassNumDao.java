@@ -7,60 +7,54 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import bean.School;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
-public class ClassNumDao extends Dao {
-	/**
-	 * filterメソッド 学校を指定してクラス番号の一覧を取得する
-	 *
-	 * @param school:School
-	 * @return クラス番号の一覧:List<String>
-	 * @throws Exception
-	 */
-	public List<String> filter(School school) throws Exception {
-		// リストを初期化
-		List<String> list = new ArrayList<>();
-		// データベースへのコネクションを確立
-		Connection connection = getConnection();
-		// プリペアードステートメント
-		PreparedStatement statement = null;
+public class ClassNumDao {
 
-		try {
-			// プリペアードステートメントにSQL文をセット
-			statement = connection
-					.prepareStatement("select class_num from class_num where school_cd=? order by class_num");
-			// プリペアードステートメントに学校コードをバインド
-			statement.setString(1, school.getCd());
-			// プリペアードステートメントを実行
-			ResultSet rSet = statement.executeQuery();
+    private DataSource ds;
 
-			// リザルトセットを全件走査
-			while (rSet.next()) {
-				// リストにクラス番号を追加
-				list.add(rSet.getString("class_num"));
-			}
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			// プリペアードステートメントを閉じる
-			if (statement != null) {
-				try {
-					statement.close();
-				} catch (SQLException sqle) {
-					throw sqle;
-				}
-			}
-			// コネクションを閉じる
-			if (connection != null) {
-				try {
-					connection.close();
-				} catch (SQLException sqle) {
-					throw sqle;
-				}
-			}
-		}
+    public ClassNumDao() {
+        try {
+            this.ds = (DataSource) (new InitialContext()).lookup("java:comp/env/jdbc/Gakuseiseiseki");
+        } catch (NamingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("DataSourceのルックアップに失敗しました。", e);
+        }
+    }
 
-		return list;
-	}
+    private Connection getConnection() throws SQLException {
+        return ds.getConnection();
+    }
 
+    // ★ このメソッドのシグネチャが重要です ★
+    public List<String> filter(String schoolCd) throws Exception { // 引数と throws Exception を確認
+        List<String> classNums = new ArrayList<>();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rSet = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement("SELECT DISTINCT class_num FROM student WHERE school_cd = ? ORDER BY class_num");
+            statement.setString(1, schoolCd);
+            rSet = statement.executeQuery();
+            while (rSet.next()) {
+                classNums.add(rSet.getString("class_num"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("クラス番号の取得に失敗しました。", e);
+        } finally {
+            try {
+                if (rSet != null) rSet.close();
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return classNums;
+    }
 }

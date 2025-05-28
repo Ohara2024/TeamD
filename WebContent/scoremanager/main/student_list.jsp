@@ -70,9 +70,9 @@
 </head>
 <body>
 <header>
-    <h1>得点管理システム</h1>
+    <h1><a href="<%= request.getContextPath() %>/scoremanager/main/menu.jsp" style="text-decoration: none; color: inherit;">得点管理システム</a></h1>
     <div class="header-info">
-        <span><%= teacherName %>様</span> <%-- ★ここを修正: teacherName変数を使用★ --%>
+        <span><%= teacherName %>様</span>
         <a href="<%= request.getContextPath() %>/login/logout" class="logout-link">ログアウト</a>
     </div>
 </header>
